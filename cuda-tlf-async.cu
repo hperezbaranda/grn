@@ -13,6 +13,21 @@
 */
 using namespace std;
 
+
+void printData(const char *msg, int *in,  const int size)
+{
+    printf("%s: ", msg);
+
+    for (int i = 0; i < size; i++)
+    {
+        printf("%5d", in[i]);
+        fflush(stdout);
+    }
+
+    printf("\n");
+    return;
+}
+
 __device__ bool state[SIZE];
 //__shared__ bool equ[SIZE];
 
@@ -57,17 +72,40 @@ __global__ void initSharedMem(){
 __global__ void findAttractor(int number)
 {
 
-  bool sta[SIZE];
-  uint thread = blockDim.x * blockIdx.x + threadIdx.x;
-  initialState(thread,sta,SIZE);
+  bool state[SIZE];
+  uint idx = blockDim.x * blockIdx.x + threadIdx.x;
+  initialState(idx,state,SIZE);
 
-  printf("Hello World from GPU! number: %d\n", thread);
+  printf("Hello World from GPU! number: %d\n", idx);
   printf("My number: %d\n", number);
+  curandState_t a_number;
+  curand_init(idx+clock(), 0, 3,  &a_number);
+  unsigned int aleatory = curand(&a_number);
+  printf("aleatory %d\n", aleatory%SIZE );
 
-  calculateState(sta,number);
-
+  calculateState(state,number);
+  // __syncthreads();
 //  printf("saida: " );
-  printf("%d\n", getDecValue(sta));
+  printf("%d\n", getDecValue(state));
+}
+
+__global__ void setRowReadRow(int *out)
+{
+    // static shared memory
+    __shared__ int tile[3][3];
+
+    // mapping from thread index to global memory index
+    // unsigned int idx = threadIdx.y * blockDim.x + threadIdx.x;
+    unsigned int idx = blockDim.x * blockIdx.x + threadIdx.x;;
+
+    // shared memory store operation
+    tile[threadIdx.y][threadIdx.x] = idx;
+
+    // wait for all threads to complete
+    // __syncthreads();
+
+    // shared memory load operation
+    out[idx] = tile[threadIdx.y][threadIdx.x];
 }
 
 int main(int argc, char **argv)
@@ -76,9 +114,34 @@ int main(int argc, char **argv)
   srand(seed);
   uint suffle = rand() %SIZE;
   // std::cout <<   << std::endl;
-  size_t numThreads =2;
+  size_t numSimu = 1 << 20;
+  size_t numState = 1 << 3;
+  size_t numBlock =0;
+  if (numState > 1024){
+    numBlock = numState/1024;
+  }else{
+    numBlock = numState;
+  }
+
+
+  size_t numThreads =1024;
   //initSharedMem<<<1,1>>>();
-  findAttractor<<<1, numThreads>>>(suffle);
+  findAttractor<<<numBlock, numThreads>>>(suffle);
+
+  // int thread = 64;
+  // int block = 20;
+  // size_t nBytes = thread * sizeof(int)*block;
+  // int *d_C;
+  // CHECK(cudaMalloc((int**)&d_C, nBytes));
+  // int *gpuRef  = (int *)malloc(nBytes);
+  //
+  // CHECK(cudaMemset(d_C, 0, nBytes));
+  // setRowReadRow<<<block, thread>>>(d_C);
+  // CHECK(cudaMemcpy(gpuRef, d_C, nBytes, cudaMemcpyDeviceToHost));
+  //
+  // printData("set row read row   ", gpuRef, thread*block);
+
+
   cout << endl;
   // CHECK(cudaFree(d_equation));
   CHECK(cudaDeviceReset());
