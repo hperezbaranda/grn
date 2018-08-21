@@ -42,7 +42,7 @@ __device__ int getDecValue(bool* v){
 
 __device__ void initialState(unsigned long int valor, bool *vet, int size) {
   // std::cout <<" initialState: "<< std::endl;
-  for (int i = 0; i < size; i++) {
+  for (unsigned int i = 0; i < size; i++) {
     vet[size-1-i] = (valor & 1) != 0;
     valor >>= 1;
   }
@@ -52,40 +52,51 @@ __device__ void calculateState(bool* state,int num){
   // for (size_t i = 0; i < SIZE; i++) {
   //   printf("\n%d\n", equ[i]);
   // }
+  // printf("recive: %d\n", num);
   bool equ[SIZE];
   equ[0] = ( state[0]  | !  state[2] );
   equ[1] = ( state[0]  &   state[2] );
   equ[2] = state[1];
-  state[num] = equ[num];
+
+  // bool change = true;
+  // // if (c_fix > 0){
+  //   for (size_t i = 0; i < c_fix; i++) {
+  //     if(num == fix[i]){
+  //       change = false;
+  //     }
+  //   }
+  // }
+  // if(change){
+  //   1+1;
+  // }
+    state[num] = equ[num];
 
 }
 
-__global__ void initSharedMem(){
-  for (size_t i = 0; i < SIZE; i++) {
-    printf("\n%d\n", state[i]);
+__global__ void initSharedMem(int c_fix, float *d_fix){
+  for (unsigned int i = 0; i < c_fix+1; i++) {
+    printf("%f\n",d_fix[i] );
   }
-  // equ[0]=( state[0]  | !state[2] );
-  // equ[1]=( state[0]  &  state[2] );
-  // equ[2]=state[1];
 }
 
-__global__ void findAttractor(int number)
+__global__ void findAttractor()
 {
 
   bool state[SIZE];
   uint idx = blockDim.x * blockIdx.x + threadIdx.x;
   initialState(idx,state,SIZE);
 
-  printf("Hello World from GPU! number: %d\n", idx);
-  printf("My number: %d\n", number);
+  printf("thread number: %d\n", idx);
+  // printf("My number: %d\n", number);
   curandState_t a_number;
   curand_init(idx+clock(), 0, 3,  &a_number);
   unsigned int aleatory = curand(&a_number);
   printf("aleatory %d\n", aleatory%SIZE );
 
-  calculateState(state,number);
-  // __syncthreads();
-//  printf("saida: " );
+
+  calculateState(state,aleatory%SIZE);
+  __syncthreads();
+// //  printf("saida: " );
   printf("%d\n", getDecValue(state));
 }
 
@@ -114,36 +125,20 @@ int main(int argc, char **argv)
   srand(seed);
   uint suffle = rand() %SIZE;
   // std::cout <<   << std::endl;
-  size_t numSimu = 1 << 20;
+  size_t numSimu = 1 << 0;
   size_t numState = 1 << 3;
-  size_t numBlock =0;
+  size_t numBlock =1;
+  size_t numThreads =1;
   if (numState > 1024){
     numBlock = numState/1024;
+    numThreads = 1024;
   }else{
-    numBlock = numState;
+    numThreads = numState;
   }
 
-
-  size_t numThreads =1024;
-  //initSharedMem<<<1,1>>>();
-  findAttractor<<<numBlock, numThreads>>>(suffle);
-
-  // int thread = 64;
-  // int block = 20;
-  // size_t nBytes = thread * sizeof(int)*block;
-  // int *d_C;
-  // CHECK(cudaMalloc((int**)&d_C, nBytes));
-  // int *gpuRef  = (int *)malloc(nBytes);
-  //
-  // CHECK(cudaMemset(d_C, 0, nBytes));
-  // setRowReadRow<<<block, thread>>>(d_C);
-  // CHECK(cudaMemcpy(gpuRef, d_C, nBytes, cudaMemcpyDeviceToHost));
-  //
-  // printData("set row read row   ", gpuRef, thread*block);
-
-
-  cout << endl;
-  // CHECK(cudaFree(d_equation));
+  for (size_t i = 0; i < numSimu; i++) {
+    findAttractor<<<numBlock, numThreads>>>();
+  }
   CHECK(cudaDeviceReset());
   // cudaDeviceReset();
 
