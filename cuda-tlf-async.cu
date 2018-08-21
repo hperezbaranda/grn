@@ -49,34 +49,14 @@ __device__ void initialState(unsigned long int valor, bool *vet, int size) {
 }
 
 __device__ void calculateState(bool* state,int num){
-  // for (size_t i = 0; i < SIZE; i++) {
-  //   printf("\n%d\n", equ[i]);
-  // }
-  // printf("recive: %d\n", num);
+
   bool equ[SIZE];
   equ[0] = ( state[0]  | !  state[2] );
   equ[1] = ( state[0]  &   state[2] );
   equ[2] = state[1];
 
-  // bool change = true;
-  // // if (c_fix > 0){
-  //   for (size_t i = 0; i < c_fix; i++) {
-  //     if(num == fix[i]){
-  //       change = false;
-  //     }
-  //   }
-  // }
-  // if(change){
-  //   1+1;
-  // }
     state[num] = equ[num];
 
-}
-
-__global__ void initSharedMem(int c_fix, float *d_fix){
-  for (unsigned int i = 0; i < c_fix+1; i++) {
-    printf("%f\n",d_fix[i] );
-  }
 }
 
 __global__ void findAttractor()
