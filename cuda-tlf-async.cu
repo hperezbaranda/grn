@@ -59,7 +59,7 @@ __device__ void calculateState(bool* state,int num){
 
 }
 
-__global__ void findAttractor()
+__global__ void findAttractor(int num, int * fix)
 {
 
   bool state[SIZE];
@@ -76,27 +76,58 @@ __global__ void findAttractor()
 
   calculateState(state,aleatory%SIZE);
   __syncthreads();
-// //  printf("saida: " );
+  //  printf("saida: " );
+  printf("%d\n", getDecValue(state));
+}
+__global__ void findAttractor(){
+
+  bool state[SIZE];
+  uint idx = blockDim.x * blockIdx.x + threadIdx.x;
+  initialState(idx,state,SIZE);
+
+  printf("thread number: %d\n", idx);
+  // printf("My number: %d\n", number);
+  curandState_t a_number;
+  curand_init(idx+clock(), 0, 3,  &a_number);
+  unsigned int aleatory = curand(&a_number);
+  printf("aleatory %d\n", aleatory%SIZE );
+
+
+  calculateState(state,aleatory%SIZE);
+  __syncthreads();
+  //  printf("saida: " );
   printf("%d\n", getDecValue(state));
 }
 
-__global__ void setRowReadRow(int *out)
-{
+__global__ void setRowReadRow(int *out){
     // static shared memory
     __shared__ int tile[3][3];
 
     // mapping from thread index to global memory index
     // unsigned int idx = threadIdx.y * blockDim.x + threadIdx.x;
-    unsigned int idx = blockDim.x * blockIdx.x + threadIdx.x;;
+    unsigned int idx = blockDim.x * blockIdx.x + threadIdx.x;
 
     // shared memory store operation
     tile[threadIdx.y][threadIdx.x] = idx;
+    printf("%d\n", tile[threadIdx.y][threadIdx.x]);
 
     // wait for all threads to complete
     // __syncthreads();
 
     // shared memory load operation
     out[idx] = tile[threadIdx.y][threadIdx.x];
+}
+
+__global__ void testeNum(int num, int * fix){
+  for (size_t i = 0; i < num; i++) {
+    printf("%d\n",fix[i] );
+  }
+}
+
+__global__ void testeNum1(){
+
+    printf("%d\n",4 );
+
 }
 
 int main(int argc, char **argv)
@@ -116,9 +147,48 @@ int main(int argc, char **argv)
     numThreads = numState;
   }
 
-  for (size_t i = 0; i < numSimu; i++) {
-    findAttractor<<<numBlock, numThreads>>>();
+  // for (size_t i = 0; i < numSimu; i++) {
+  //   findAttractor<<<numBlock, numThreads>>>();
+  // }
+  int numFix=0;
+  if(argc > 1){
+    numFix= atoi(argv[1]);
+    int nBytes = numFix * sizeof(int);
+    int *d_C;
+    CHECK(cudaMalloc((int**)&d_C, nBytes));
+    int *gpuRef  = (int *)malloc(nBytes);
+    int count =2;
+    for (size_t i = 0; i < numFix; i++) {
+      gpuRef[i] =atoi(argv[count++]);
+    }
+    CHECK(cudaMemcpy(d_C, gpuRef, nBytes, cudaMemcpyHostToDevice));
+    // testeNum<<<1, 3>>>(numFix,d_C);
+    for (size_t i = 0; i < numSimu; i++) {
+      findAttractor<<<numBlock, numThreads>>>(numFix,d_C);
+    }
+  }else{
+    // testeNum1<<<1, 3>>>();
+    for (size_t i = 0; i < numSimu; i++) {
+      findAttractor<<<numBlock, numThreads>>>();
+    }
   }
+
+
+
+
+
+  //CHECK(cudaMemset(d_C, 0, nBytes));
+
+   // gpuRef[0]=1;
+   // gpuRef[1]=2;
+   // gpuRef[2]=0;
+   // CHECK(cudaMemcpy(d_C, gpuRef, nBytes, cudaMemcpyHostToDevice));
+   //
+   // testeNum<<<1, 3>>>(numFix,d_C);
+   //CHECK(cudaMemcpy(gpuRef, d_C, nBytes, cudaMemcpyDeviceToHost));
+   // printData("setRowReadRow       ", gpuRef, 3);
+
+
   CHECK(cudaDeviceReset());
   // cudaDeviceReset();
 
