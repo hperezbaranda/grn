@@ -59,7 +59,7 @@ __device__ void calculateState(bool* state,int num){
 
 }
 
-__global__ void findAttractor(int num, int * fix)
+__global__ void findAttractor(int c_fix, int * fix)
 {
 
   bool state[SIZE];
@@ -73,8 +73,15 @@ __global__ void findAttractor(int num, int * fix)
   unsigned int aleatory = curand(&a_number);
   printf("aleatory %d\n", aleatory%SIZE );
 
-
-  calculateState(state,aleatory%SIZE);
+  bool calculate=true;
+  for (size_t i = 0; i < c_fix; i++) {
+    if(aleatory%SIZE == fix[i])
+      calculate = false;
+  }
+  if(calculate){
+    printf("cal: %d\n",aleatory%SIZE );
+    calculateState(state,aleatory%SIZE);
+  }
   __syncthreads();
   //  printf("saida: " );
   printf("%d\n", getDecValue(state));
@@ -109,10 +116,10 @@ __global__ void setRowReadRow(int *out){
 
     // shared memory store operation
     tile[threadIdx.y][threadIdx.x] = idx;
-    printf("%d\n", tile[threadIdx.y][threadIdx.x]);
+    //printf("%d\n", tile[threadIdx.y][threadIdx.x]);
 
     // wait for all threads to complete
-    // __syncthreads();
+    __syncthreads();
 
     // shared memory load operation
     out[idx] = tile[threadIdx.y][threadIdx.x];
@@ -137,7 +144,7 @@ int main(int argc, char **argv)
   uint suffle = rand() %SIZE;
   // std::cout <<   << std::endl;
   size_t numSimu = 1 << 0;
-  size_t numState = 1 << 3;
+  size_t numState = 1 << 1;
   size_t numBlock =1;
   size_t numThreads =1;
   if (numState > 1024){
@@ -147,34 +154,34 @@ int main(int argc, char **argv)
     numThreads = numState;
   }
 
-  // for (size_t i = 0; i < numSimu; i++) {
-  //   findAttractor<<<numBlock, numThreads>>>();
+  // int numFix=0;
+  // if(argc > 1){
+  //   numFix= atoi(argv[1]);
+  //   int nBytes = numFix * sizeof(int);
+  //   int *d_C;
+  //   CHECK(cudaMalloc((int**)&d_C, nBytes));
+  //   int *gpuRef  = (int *)malloc(nBytes);
+  //   int count =2;
+  //   for (size_t i = 0; i < numFix; i++) {
+  //     gpuRef[i] =atoi(argv[count++]);
+  //   }
+  //   int *result  = (int *)malloc(nBytes);
+  //   CHECK(cudaMemcpy(d_C, gpuRef, nBytes, cudaMemcpyHostToDevice));
+  //   setRowReadRow<<<1, 3>>>(d_C);
+  //
+  //   CHECK(cudaMemcpy(result, d_C, nBytes, cudaMemcpyDeviceToHost));
+  //   printData("setColReadCol       ", result, numFix);
+  //   // testeNum<<<2, 2>>>(numFix,d_C);
+  // }else{
+  //   testeNum1<<<1, 3>>>();
+  //   // for (size_t i = 0; i < numSimu; i++) {
+  //   //   findAttractor<<<numBlock, numThreads>>>();
+  //   // }
   // }
-  int numFix=0;
-  if(argc > 1){
-    numFix= atoi(argv[1]);
-    int nBytes = numFix * sizeof(int);
-    int *d_C;
-    CHECK(cudaMalloc((int**)&d_C, nBytes));
-    int *gpuRef  = (int *)malloc(nBytes);
-    int count =2;
-    for (size_t i = 0; i < numFix; i++) {
-      gpuRef[i] =atoi(argv[count++]);
-    }
-    CHECK(cudaMemcpy(d_C, gpuRef, nBytes, cudaMemcpyHostToDevice));
-    // testeNum<<<1, 3>>>(numFix,d_C);
-    for (size_t i = 0; i < numSimu; i++) {
-      findAttractor<<<numBlock, numThreads>>>(numFix,d_C);
-    }
-  }else{
-    // testeNum1<<<1, 3>>>();
-    for (size_t i = 0; i < numSimu; i++) {
-      findAttractor<<<numBlock, numThreads>>>();
-    }
+
+  for (size_t i = 0; i < numSimu; i++) {
+   findAttractor<<<numBlock, numThreads>>>();
   }
-
-
-
 
 
   //CHECK(cudaMemset(d_C, 0, nBytes));
