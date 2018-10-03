@@ -1,7 +1,12 @@
 #! /bin/python
 import sys
 import re
-
+import os
+import numpy as np
+from py2cytoscape.data.cyrest_client import CyRestClient
+from py2cytoscape.data.util_network import NetworkUtil as util
+from py2cytoscape.data.style import StyleUtil as s_util
+import pandas as pd
 
 
 def tabelaVerdade(func=None):
@@ -84,7 +89,11 @@ def TesteTlf(tlf):
 
 if __name__ == '__main__':
 	pattern =re.compile(r'(?<=v)\d+')
-	#print sys.argv[1]+'expr/expressions.ALL.txt'
+	
+	# Create Client
+	cy = CyRestClient()
+	# Clear current session
+	cy.session.delete()
 
 	try:
 		line = open(sys.argv[1]+'expr/expressions.ALL.txt','r').readlines()
@@ -100,34 +109,71 @@ if __name__ == '__main__':
 		node_ext = [i[0] for i in external]
 
 		list = [i.split(' =')[0] for i in line]
-
+		
+		#creating graph with all numbers of nodes
+		tam=len(list)+len(node_ext)
+		# graph = np.empty((tam,3),dtype=str) 
+		
+		graph = []
+		
+		print(graph)
 		orig=[]
 		modif = []
 		lst_tlf=[]
 		num_ext_id=[]
+		cont =0
 		for i in line:
+			equal_pass = False
+			new_value = False
+			loc_x = None
+			loc_y = None
 			count=0
 			txt = ''
 			for j in i.split():
-				if j in list:
+				if j in list:					
 					txt += ' v'+str(list.index(j))
+					if(equal_pass):
+						loc_x = list.index(j)
+						new_value = True
+					else:
+						loc_y = list.index(j)
+						new_value = True
+
 					count+=1
 				else:
 					#Agregue esto
 					#extra = pattern.findall(j)
 
 					#if len(extra)>0:
+					
+					if(j == "="):
+						
+						equal_pass =True
 					if j in node_ext:
 						#print j
 						list.append(j)
 						txt += ' v'+str(list.index(j))
 						num_ext_id.append((j,str(list.index(j))))
+						loc_x = list.index(j)
+						new_value = True
 						#pass
 						#txt += ' const'
 					else:
 						txt += ' '+j
+						new_value = False
+				
+				if(loc_x != None and loc_y != None and new_value ):
+					print(str(loc_y)+ " "+ str(loc_x))
+					graph.append([list[loc_x],"dd",list[loc_y]])
+					# graph[cont][0]=list[loc_y]
+					# graph[cont][2]=list[loc_x]
+					# graph[cont][1]="dd"
+					cont +=1
+					# print(graph)
+				
 
 			#print(1 if eval(txt.split('=')[1]) else 0)
+			
 
 			if count > 0:
 				#print txt.split('=')[1]
@@ -142,9 +188,32 @@ if __name__ == '__main__':
 			else:
 				orig.append(txt.split(' =')[0]+' = const')
 				#print "Holaaaa"
+			
+		# print(graph)
+		# cont=0
+		# for i in range(tam):
+		# 	print(str(cont)+" => ", end='')
+		# 	for j in range(tam):
+		# 		print(str(graph[i][j]), end='')
+		# 	cont+=1
+		# 	print()
+		data = pd.DataFrame(graph, columns=['source','interaction','target'])
+		# print(data)
+		net_name=os.path.basename(sys.argv[1])
+		print(sys.argv[1])
+		net1 = cy.network.create_from_dataframe(data, collection="TLF",name =net_name )
+		cy.layout.apply(network=net1)
+		cy.layout.fit(network=net1)
+		minimal_style = cy.style.create('Minimal')
+		cy.style.apply(style=minimal_style, network=net1)
+		view2 = net1.get_view(net1.get_views()[0], format='view')
+		view2.update_network_view(visual_property='EDGE_TARGET_ARROW_SHAPE', value='ARROW_SHORT')
 
+
+		print(orig)
 		print('\n')
 		print("Nodes: "+str(list))
+		print(str(len(list))+'\n')
 		print('\n')
 		#for i in orig:
 		#	print i.replace('or','|')
