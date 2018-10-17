@@ -2,6 +2,7 @@
 import sys
 import re
 import os
+from time import sleep
 import numpy as np
 from py2cytoscape.data.cyrest_client import CyRestClient
 from py2cytoscape.data.util_network import NetworkUtil as util
@@ -95,221 +96,221 @@ if __name__ == '__main__':
 	# Clear current session
 	cy.session.delete()
 
-	try:
-		line = open(sys.argv[1]+'expr/expressions.ALL.txt','r').readlines()
+	# try:
 
-		#external = [i.strip() for i in open(sys.argv[1]+'expr/external_components.ALL.txt','r').readlines()]
-		try:
-			external = [(i.strip().split()[0],int(i.strip().split()[1])) for i in open(sys.argv[1]+'expr/external_components.ALL.txt','r').readlines()]
+	line = [ i for i in open(sys.argv[1],'r').readlines() if len(i.strip().split())!=1]
+	# print(line)
+	# line = open(sys.argv[1]+'expr/expressions.ALL.txt','r').readlines()
 
-		except Exception as e:
-			external = [(i.strip().split()[0],0) for i in open(sys.argv[1]+'expr/external_components.ALL.txt','r').readlines()]
+	external = [(i.strip().split()[0],0) for i in open(sys.argv[1],'r').readlines() if len(i.strip().split())==1]
+	
 
-		#print external
-		node_ext = [i[0] for i in external]
+	node_ext = [i[0] for i in external]
 
-		list = [i.split(' =')[0] for i in line]
+	list = [i.strip().split()[0] for i in line ]
+	print(list)
+	
+	print("Len: "+str(len(list))+"\n")
+	print(node_ext)
+	print("Len: "+str(len(node_ext))+"\n")
+	#creating graph with all numbers of nodes
+	tam=len(list)+len(node_ext)
+	# graph = np.empty((tam,3),dtype=str) 
+	
+	graph = []
+	orig=[]
+	modif = []
+	lst_tlf=[]
+	num_ext_id=[]
+	cont =0
+	for i in line:
 		
-		#creating graph with all numbers of nodes
-		tam=len(list)+len(node_ext)
-		# graph = np.empty((tam,3),dtype=str) 
-		
-		graph = []
-		
-		print(graph)
-		orig=[]
-		modif = []
-		lst_tlf=[]
-		num_ext_id=[]
-		cont =0
-		for i in line:
-			equal_pass = False
-			new_value = False
-			loc_x = None
-			loc_y = None
-			count=0
-			txt = ''
-			for j in i.split():
-				if j in list:					
-					txt += ' v'+str(list.index(j))
-					if(equal_pass):
-						loc_x = list.index(j)
-						new_value = True
-					else:
-						loc_y = list.index(j)
-						new_value = True
-
-					count+=1
-				else:
-					#Agregue esto
-					#extra = pattern.findall(j)
-
-					#if len(extra)>0:
-					
-					if(j == "="):
+		equal_pass = False
+		new_value = False
+		loc_x = None
+		loc_y = None
+		count=0
+		txt = ''
+		for j in i.split():
+			
+			if j in list:	
 						
-						equal_pass =True
-					if j in node_ext:
-						#print j
-						list.append(j)
-						txt += ' v'+str(list.index(j))
-						num_ext_id.append((j,str(list.index(j))))
-						loc_x = list.index(j)
-						new_value = True
-						#pass
-						#txt += ' const'
-					else:
-						txt += ' '+j
-						new_value = False
-				
-				if(loc_x != None and loc_y != None and new_value ):
-					print(str(loc_y)+ " "+ str(loc_x))
-					graph.append([list[loc_x],"dd",list[loc_y]])
-					# graph[cont][0]=list[loc_y]
-					# graph[cont][2]=list[loc_x]
-					# graph[cont][1]="dd"
-					cont +=1
-					# print(graph)
-				
-
-			#print(1 if eval(txt.split('=')[1]) else 0)
-			
-
-			if count > 0:
-				#print txt.split('=')[1]
-				table,l = tabelaVerdade(txt.split('=')[1])
-
-				tlf=TLF(table)
-				#print("TLF: "+tlf)
-				# print('\n')
-				modif.append(l)
-				lst_tlf.append(tlf)
-				orig.append(txt)
-			else:
-				orig.append(txt.split(' =')[0]+' = const')
-				#print "Holaaaa"
-			
-		# print(graph)
-		# cont=0
-		# for i in range(tam):
-		# 	print(str(cont)+" => ", end='')
-		# 	for j in range(tam):
-		# 		print(str(graph[i][j]), end='')
-		# 	cont+=1
-		# 	print()
-		data = pd.DataFrame(graph, columns=['source','interaction','target'])
-		# print(data)
-		net_name=os.path.basename(sys.argv[1])
-		print(sys.argv[1])
-		net1 = cy.network.create_from_dataframe(data, collection="TLF",name =net_name )
-		cy.layout.apply(network=net1)
-		cy.layout.fit(network=net1)
-		minimal_style = cy.style.create('Minimal')
-		cy.style.apply(style=minimal_style, network=net1)
-		view2 = net1.get_view(net1.get_views()[0], format='view')
-		view2.update_network_view(visual_property='EDGE_TARGET_ARROW_SHAPE', value='ARROW_SHORT')
-
-
-		print(orig)
-		print('\n')
-		print("Nodes: "+str(list))
-		print(str(len(list))+'\n')
-		print('\n')
-		#for i in orig:
-		#	print i.replace('or','|')
-		#print (orig)
-		print('\n')
-		orig = [i.replace('or', '|') for i in orig]
-		orig = [i.replace('and', '&') for i in orig]
-		orig = [i.replace('not', '!') for i in orig]
-		for n in range(len(orig)):
-			orig = [i.replace('v'+str(n)+' ', 'v['+str(n)+'] ') for i in orig]
-		#orig = [i.replace('v'+str(n)+' ', 'v['+str(n)+'] ') for n in range(len(orig)) for i in orig]
-		#orig = [i.replace('v39', 'const') for i in orig]
-		#print pattern.match('( v9 )').group(0)
-		const =  [pattern.search(i).group(0) for i in orig if pattern.search(i) !=None]
-		#print const
-		for i in const:
-			#print i
-			orig = [j.replace("v"+i,"const") for j in orig]
-
-		for i in orig:
-			print(i)
-
-
-		print('\n')
-		print(modif)
-		print("tamanho: "+str(len(modif)))
-		print('\n')
-		print("TLF: "+str(lst_tlf))
-	#	print("\n")
-		print("tamanho: "+str(len(lst_tlf)))
-		print("\n")
-		cont = 0
-		txt="pair<int, int> equacoe["+str(len(lst_tlf))+"] = {"
-		for  i in lst_tlf:
-			txt+="make_pair("+str(cont)+","+str(len(i))+"), "
-			cont +=len(i)
-		txt +="};"
-		print(txt)
-		print("\n")
-		# c_tlf = [j for i in lst_tlf for j in i]
-		c_tlf="pair<int, int> values["+str(cont)+"] = {"
-		for i in range(len(lst_tlf)):
-			for j in range(len(lst_tlf[i])-1):
-				if int(modif[i][j]) > (len(modif)-1):
-					id_ext = [z[0] for z in num_ext_id if z[1]==modif[i][j] ][0]
-					v_id_ext = [y[1] for y in external if y[0] == id_ext][0]
-					if v_id_ext:
-						c_tlf+="make_pair(-3,"+str(lst_tlf[i][j])+"), "
-					else:
-						c_tlf+="make_pair(-2,"+str(lst_tlf[i][j])+"), "
+				txt += ' v'+str(list.index(j))
+				if(equal_pass):
+					loc_x = list.index(j)
+					new_value = True
+					
+					
 				else:
-					c_tlf+="make_pair("+modif[i][j]+","+str(lst_tlf[i][j])+"), "
-			c_tlf+="make_pair(-1,"+str(lst_tlf[i][-1])+"), "
-		c_tlf +="};"
-		print(c_tlf)
-		print("tamanho: "+str(cont))
-		print('\n')
-		#for i in range(len([i for i in orig if i.split("= ")[1] != "const"])):
-		print(external)
-		print(num_ext_id)
-		num_ext = [i[1] for i in num_ext_id]
-		print(num_ext)
-		for i in range(len(orig)):
-			txt =orig[i].split('= ')[0]+"= TLF("
-			txt = txt.replace("v","aux")
-	#		print txt
-			#print orig[i].split('= ')[1]!= "( const )"
-			if(orig[i].split('= ')[1]) != "( const )":
-				#print txt
-				for j in range(len(modif[i])):
-					#print "*****************"+modif[i][j]
-					if modif[i][j] in num_ext:
-						#print "-----------"+modif[i][j]
-						id_ext = [z[0] for z in num_ext_id if z[1]==modif[i][j] ][0]
-						#print"id_ext: "+str(id_ext)
-						v_id_ext = [y[1] for y in external if y[0] == id_ext][0]
-
-						txt +=" "+str(v_id_ext)+" * "+ str(lst_tlf[i][j])+" +"
-					else:
-						txt += ' vet['+modif[i][j]+"] * "+ str(lst_tlf[i][j])+" +"
-				txt += ", "+str(lst_tlf[i][-1])+" );"
+					
+					loc_y = list.index(j)
+					new_value = True
+					# print(loc_y)
+					# print(list)
+					# print("Len: "+str(len(list)))
+				count+=1
 			else:
-				#modif.pop(i)
-				#modif.insert(i,[])
-				#lst_tlf.pop(i)
-				#lst_tlf.insert(i,[])
-				txt = orig[i].split('= ')[0]+"= 0;"
-				txt = txt.replace("v","aux")
-			print(txt)
+				#Agregue esto
+				#extra = pattern.findall(j)
 
-	except Exception as e:
+				#if len(extra)>0:
+				
+				if(j == "="):
+					
+					equal_pass =True
+				if j in node_ext:
+					
+					list.append(j)
+					txt += ' v'+str(list.index(j))
+					num_ext_id.append((j,str(list.index(j))))
+					loc_x = list.index(j)
+					new_value = True
+					#pass
+					#txt += ' const'
+				else:
+					txt += ' '+j
+					new_value = False
+			
+			if(loc_x != None and loc_y != None and new_value ):
+				graph.append([list[loc_x],"dd",list[loc_y]])
 
-		print("Error: "+ str(e))
+
+		if count > 0:
+			# print(txt)
+			table,l = tabelaVerdade(txt.split('=')[1])
+
+			tlf=TLF(table)
+			# print("TLF: "+str(tlf))
+			modif.append(l)
+			lst_tlf.append(tlf)
+			orig.append(txt)
+			
+			
+		else:
+			orig.append(txt.split(' =')[0]+' = const')
+		
+		
+	data = pd.DataFrame(graph, columns=['source','interaction','target'])
+	net_name=os.path.basename(sys.argv[1]).split(".")[0]
+	print(sys.argv[1])
+	net1 = cy.network.create_from_dataframe(data, collection="TLF",name =net_name )
+	cy.layout.apply(network=net1)
+	cy.layout.fit(network=net1)
+	my_style = cy.style.create('default')
+	cy.style.apply(style=my_style, network=net1)
+	sleep(2)
+	my_style.update_defaults({'EDGE_TARGET_ARROW_SHAPE':'ARROW_SHORT'})
+	cy.style.apply(style=my_style, network=net1)
+
+	print(orig)
+	print('\n')
+	print("Nodes: "+str(list))
+	print(str(len(list))+'\n')
+	print('\n')
+	#for i in orig:
+	#	print i.replace('or','|')
+	#print (orig)
+	print('\n')
+	orig = [i.replace('or', '|') for i in orig]
+	orig = [i.replace('and', '&') for i in orig]
+	orig = [i.replace('not', '!') for i in orig]
+	
+	const =  [j for i in orig if pattern.findall(i) !=None for j in pattern.findall(i)]
+	print("Const: "+str(const))
+	print()
+	# for n in range(len(orig)):
+	# 	orig = [i.replace('v'+str(n)+' ', 'v['+str(n)+'] ') for i in orig]
+
+	# for i in orig:
+	# 	print(i)
+	
+	
+	#print const
+	for i in const:
+		#print i
+		orig = [j.replace("v"+i,"v["+i+"]") if int(i)< len(list)-1 else j.replace("v"+i,"const")  for j in orig]
+
+	for i in orig:
+		print(i)
+
+
+	print('\n')
+	print("Vetores: "+str(modif))
+	print("tamanho: "+str(len(modif)))
+	print('\n')
+	print("TLF: "+str(lst_tlf))
+#	print("\n")
+	print("tamanho: "+str(len(lst_tlf)))
+	print("\n")
+	
+	# cont = 0
+	# txt="pair<int, int> equacoe["+str(len(lst_tlf))+"] = {"
+	# for  i in lst_tlf:
+	# 	txt+="make_pair("+str(cont)+","+str(len(i))+"), "
+	# 	cont +=len(i)
+	# txt +="};"
+	# print(txt)
+	# print("\n")
+	# # c_tlf = [j for i in lst_tlf for j in i]
+	# c_tlf="pair<int, int> values["+str(cont)+"] = {"
+	# for i in range(len(lst_tlf)):
+	# 	for j in range(len(lst_tlf[i])-1):
+	# 		if int(modif[i][j]) > (len(modif)-1):
+	# 			print(modif[i][j])
+	# 			# id_ext = [z[0] for z in num_ext_id if z[1]==modif[i][j] ][0]
+	# 			# v_id_ext = [y[1] for y in external if y[0] == id_ext][0]
+	# 			# if v_id_ext:
+	# 			# 	c_tlf+="make_pair(-3,"+str(lst_tlf[i][j])+"), "
+	# 			# else:
+	# 			# 	c_tlf+="make_pair(-2,"+str(lst_tlf[i][j])+"), "
+	# 		else:
+	# 			c_tlf+="make_pair("+modif[i][j]+","+str(lst_tlf[i][j])+"), "
+	# 	c_tlf+="make_pair(-1,"+str(lst_tlf[i][-1])+"), "
+	# c_tlf +="};"
+	# print(c_tlf)
+	# print("tamanho: "+str(cont))
+	# print('\n')
+	# #for i in range(len([i for i in orig if i.split("= ")[1] != "const"])):
+	print(external)
+	print()
+	print(num_ext_id)
+	num_ext = [i[1] for i in num_ext_id]
+
+	for i in range(len(orig)):
+		txt =orig[i].split('= ')[0]+"= TLF("
+		txt = txt.replace("v","aux")
+		
+		
+		if(orig[i].split('= ')[1]) != "( const )":
+			
+			for j in range(len(modif[i])):
+				#print "*****************"+modif[i][j]
+				if modif[i][j] in num_ext:
+					#print "-----------"+modif[i][j]
+					id_ext = [z[0] for z in num_ext_id if z[1]==modif[i][j] ][0]
+					#print"id_ext: "+str(id_ext)
+					v_id_ext = [y[1] for y in external if y[0] == id_ext][0]
+
+					txt +=" "+str(v_id_ext)+" * "+ str(lst_tlf[i][j])+" +"
+				else:
+					txt += ' vet['+modif[i][j]+"] * "+ str(lst_tlf[i][j])+" +"
+			txt += ", "+str(lst_tlf[i][-1])+" );"
+		else:
+			#modif.pop(i)
+			#modif.insert(i,[])
+			#lst_tlf.pop(i)
+			#lst_tlf.insert(i,[])
+			txt = orig[i].split('= ')[0]+"= 0;"
+			txt = txt.replace("v","aux")
+		print(txt)
+
+	# except Exception as e:
+	# 	print("Error: "+ str(e))
+	# 	sys.exit(1)
 
 	# t,l = tabelaVerdade('( v1 and v2 ) or ( v1 and v3 ) ')
 	# tlf = TLF(t)
 	# for i in TesteTlf(tlf):
 	# 	print i
 	# print tlf
+sys.exit(0)

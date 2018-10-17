@@ -239,8 +239,8 @@ if __name__ == '__main__':
 
 		print("Error: "+ str(e))
 
-	# t,l = tabelaVerdade('( v1 and v2 ) or ( v1 and v3 ) ')
+	# t,l = tabelaVerdade('not ( v1 or v2  or  v3 ) ')
 	# tlf = TLF(t)
 	# for i in TesteTlf(tlf):
-	# 	print i
+	#     print i
 	# print tlf
