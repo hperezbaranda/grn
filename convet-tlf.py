@@ -42,6 +42,7 @@ def tabelaVerdade(func=None):
 			#print i
 			#print j
 			tabela[i][j] = int(var[j])
+		print(txt)
 		tabela[i][-1]=int(1 if eval(txt) else 0 )
 #		print(txt)
 		#print (var+'---->'+str(1 if eval(txt) else 0 ))
@@ -201,6 +202,12 @@ if __name__ == '__main__':
 	sleep(2)
 	my_style.update_defaults({'EDGE_TARGET_ARROW_SHAPE':'ARROW_SHORT'})
 	cy.style.apply(style=my_style, network=net1)
+	eq=[]
+	for i in line:
+		past = False
+		eq.append(i.strip().split(" = "))
+	update_eq = pd.DataFrame(eq,columns=['id','equation'])
+	net1.update_node_table(update_eq,data_key_col="id")
 
 	print(orig)
 	print('\n')
@@ -216,23 +223,13 @@ if __name__ == '__main__':
 	orig = [i.replace('not', '!') for i in orig]
 	
 	const =  [j for i in orig if pattern.findall(i) !=None for j in pattern.findall(i)]
-	print("Const: "+str(const))
-	print()
-	# for n in range(len(orig)):
-	# 	orig = [i.replace('v'+str(n)+' ', 'v['+str(n)+'] ') for i in orig]
-
-	# for i in orig:
-	# 	print(i)
-	
-	
-	#print const
-	for i in const:
-		#print i
-		orig = [j.replace("v"+i,"v["+i+"]") if int(i)< len(list)-1 else j.replace("v"+i,"const")  for j in orig]
-
+			
+	orig = [pattern.sub(lambda x : '['+x.group(0)+']',j) for j in orig]
+	# for i in const:
+	# # 	orig = [j.replace("v"+i+" ","v["+i+"]") if int(i)< len(list)-1 else j.replace("v"+i,"const")  for j in orig]
+	# 	orig = [pattern.sub(lambda x : '['+x.group(0)+']',j) if int(i)< len(list)-1 else pattern.sub('const',j)  for j in orig]
 	for i in orig:
 		print(i)
-
 
 	print('\n')
 	print("Vetores: "+str(modif))
@@ -276,6 +273,21 @@ if __name__ == '__main__':
 	print(num_ext_id)
 	num_ext = [i[1] for i in num_ext_id]
 
+	entry =  open('pesosTabela.txt','w')
+	entry.write(str(len(list))+'\n')
+	eqtam =""
+	for i in modif:
+		eqtam +=str(len(i))+" " 
+	entry.write(eqtam.strip()+'\n')
+
+	
+	for i in range(len(orig)):
+		eq = ""
+		for j in range(len(modif[i])):
+			eq += str(modif[i][j])+ " "+str(lst_tlf[i][j])+" "
+		eq += str(lst_tlf[i][-1])
+		entry.write(eq.strip()+'\n')
+	
 	for i in range(len(orig)):
 		txt =orig[i].split('= ')[0]+"= TLF("
 		txt = txt.replace("v","aux")

@@ -18,7 +18,7 @@ void runGNR (int inicio, int fim);
 int main() {
     unsigned long int estadosIniciais;
     // estadosIniciais = (unsigned long int) pow(2, 10) - 1;
-    estadosIniciais = (1<<10);
+    estadosIniciais = (1<<21);
     unsigned int period = 0;
     unsigned int transient = 0;
     omp_set_num_threads(NUMTHREADS);
@@ -87,46 +87,27 @@ void pass (bool *aux){
 
  }
 
- aux[0] = TLF( vet[18] * 6 + vet[35] * -6 + vet[28] * -2 + vet[25] * -2 , 4 );
- aux[1] = TLF( vet[25] * 2 + vet[15] * -6 + vet[6] * 2 , 2 );
- aux[2] = TLF( vet[36] * 2 , 2 );
- aux[3] = TLF( vet[28] * 2 + vet[17] * -6 + vet[0] * -6 + vet[32] * 2 , 2 );
- aux[4] = TLF( vet[13] * 2 , 2 );
- aux[5] = TLF( vet[24] * 2 , 2 );
- aux[6] = TLF( vet[4] * 2 , 2 );
- aux[7] = TLF( vet[34] * 2 + vet[17] * -2 , 2 );
- aux[8] = TLF( vet[26] * 2 , 2 );
- aux[9] = TLF( vet[16] * 2 + vet[5] * 2 + vet[22] * -2 , 4 );
- aux[10] = TLF( vet[2] * 2 + vet[17] * -2 , 2 );
- aux[11] = TLF( vet[34] * 2 , 2 );
- aux[12] = TLF( vet[18] * 2 , 2 );
- aux[13] = 0;
- aux[14] = TLF( vet[30] * 2 + vet[34] * 6 + vet[33] * -6 + vet[1] * 2 , 8 );
- aux[15] = TLF( vet[36] * 2 , 2 );
- aux[16] = TLF( vet[24] * 2 , 2 );
- aux[17] = TLF( vet[9] * 2 , 2 );
- aux[18] = TLF( vet[19] * -2 , 0 );
- aux[19] = TLF( vet[18] * 2 + vet[21] * -2 , 2 );
- aux[20] = TLF( vet[3] * 2 + vet[11] * 2 + vet[35] * 2 + vet[0] * -2 , 6 );
- aux[21] = TLF( vet[17] * 2 + vet[12] * -6 + vet[31] * 2 , 2 );
- aux[22] = TLF( vet[34] * 2 , 2 );
- aux[23] = 0;
- aux[24] = 0;
- aux[25] = TLF( vet[28] * 2 + vet[0] * -2 , 2 );
- aux[26] = TLF( vet[4] * 2 , 2 );
- aux[27] = TLF( vet[28] * 2 , 2 );
- aux[28] = TLF( vet[20] * 2 + vet[0] * -6 + vet[1] * 2 + vet[25] * 10 , 2 );
- aux[29] = TLF( vet[17] * 2 + vet[34] * 2 , 2 );
- aux[30] = TLF( vet[10] * 2 , 2 );
- aux[31] = TLF( vet[8] * 2 , 2 );
- aux[32] = TLF( vet[38] * 2 , 2 );
- aux[33] = TLF( vet[18] * 2 + vet[7] * -2 + vet[34] * -2 , 2 );
- aux[34] = TLF( vet[30] * 2 + vet[29] * -6 + vet[37] * 2 , 2 );
- aux[35] = TLF( vet[14] * 2 + vet[33] * -2 , 2 );
- aux[36] = TLF( vet[4] * 2 , 2 );
- aux[37] = TLF( vet[27] * 2 + vet[28] * 2 , 4 );
- aux[38] = TLF( vet[20] * 2 + vet[0] * -6 + vet[1] * 2 , 2 );
-
+ aux[0] = TLF( vet[16] * -2 , 0 );
+ aux[1] = TLF( vet[15] * -2 + vet[4] * -2 , -2 );
+ aux[2] = TLF( vet[5] * 2 + vet[7] * -2 , 2 );
+ aux[3] = TLF( vet[1] * 2 + vet[18] * 2 + vet[10] * 2 + vet[4] * -14 , 2 );
+ aux[4] = TLF( vet[19] * -2 + vet[0] * -2 , 0 );
+ aux[5] = TLF( vet[2] * 2 , 2 );
+ aux[6] = TLF( vet[0] * 2 + vet[19] * 2 , 2 );
+ aux[7] = TLF( vet[5] * -2 , 0 );
+ aux[8] = TLF( vet[17] * -2 , 0 );
+ aux[9] = TLF( vet[19] * 2 , 2 );
+ aux[10] = TLF( vet[9] * 2 + vet[4] * -2 , 2 );
+ aux[11] = TLF( vet[5] * 2 + vet[13] * 2 + vet[7] * -6 , 2 );
+ aux[12] = TLF( vet[15] * 2 + vet[0] * 2 + vet[4] * -2 , 4 );
+ aux[13] = TLF( vet[6] * 2 , 2 );
+ aux[14] = TLF( vet[15] * 2 + vet[4] * -2 , 2 );
+ aux[15] = TLF( vet[16] * 2 + vet[9] * 2 + vet[12] * -6 , 2 );
+ aux[16] = TLF( vet[15] * 2 + vet[13] * -2 + vet[10] * -2 , 2 );
+ aux[17] = TLF( vet[18] * 2 , 2 );
+ aux[18] = TLF( vet[8] * 2 , 2 );
+ aux[19] = TLF( vet[11] * 2 , 2 );
+ aux[20] = TLF( vet[3] * 2 + vet[14] * -2 , 2 );
 
 
 // for (int i=0; i<SIZE; i++){

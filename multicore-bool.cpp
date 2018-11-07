@@ -1,21 +1,38 @@
 #include <iostream>
 #include <math.h>
 #include <omp.h>
-#define SIZE 3
-#define NUMTHREADS 1
+#include <map>
+#include <string>
+#include <stdlib.h>
+#include <sstream>
+#include <fstream>
+
+#define SIZE 21
+#define NUMTHREADS 1024
+
+
 using namespace std;
+typedef map <string,map <int,int> > Tabela;
+Tabela atractor;
 
 void pass(bool *aux, string name);
 bool equals(bool *vet1, bool *vet2, int size);
 void print(bool *vet1);
 void initialState(unsigned long int valor, bool *vet1, bool *vet2, int size);
+int binarice(bool *vect);
 string boolArraytoString(bool *vet, int size);
 unsigned long long int boolArraytoInt(bool *vet, int size);
-
 void runGNR (int inicio, int fim);
-int main() {
+
+int main(int argc, char **argv) {
+    filebuf fb;
+    if(!fb.open(argv[1],ios::in))
+    {
+        cerr << "Erro ao abrir arquivo de entrada " << argv[1] <<endl;
+        exit(0);
+    }
     unsigned long int estadosIniciais;
-    estadosIniciais = (unsigned long int) pow(2, 3)-1;
+    estadosIniciais = (unsigned long int) pow(2, SIZE)-1;
     unsigned int period = 0;
     unsigned int transient = 0;
     omp_set_num_threads(NUMTHREADS);
@@ -23,6 +40,18 @@ int main() {
     unsigned long int dadosporThread = (estadosIniciais/NUMTHREADS)-1;
     unsigned long int fim = dadosporThread;
     runGNR(0,estadosIniciais);
+    for( Tabela::iterator it = atractor.begin(); it != atractor.end(); ++it )
+    {
+        cout << it->first << ": ";
+        for( map <int,int>::iterator it2=it->second.begin(); it2 != it->second.end(); ++it2){
+            // if(it2->second == 0)
+            //     cout << it2->first << " "<<it2->second+1 << endl;
+            // else
+            //     cout << it2->first << " "<<it2->second+2 << endl;
+            cout << it2->first << " "<<it2->second << endl;
+        }
+        
+    }
     return 0;
 }
 
@@ -71,7 +100,7 @@ unsigned long long int boolArraytoInt(bool *vet, int size) {
     //  std::cout << " = " << out << std::endl;
     return out;
 }
-
+/*
 // Network (33333 Vértices)
 void pass (bool *aux, string name){
     bool vet[SIZE];
@@ -85,14 +114,15 @@ aux[0] = (  ( vet[0] ) | ! ( vet[2] )  );
 aux[1] = ( ( vet[0] ) &  ( vet[2] ) );
 aux[2] = ( vet[1] );
 
-cout << name << ": ";
-for (int i=0; i<SIZE; i++){
-    cout << aux[i] << " ";
-}
-cout << endl;
+// cout << name << ": ";
+// for (int i=0; i<SIZE; i++){
+//     cout << aux[i] << " ";
+// }
+// cout << endl;
 
 
 }
+*/
 /*
 // Network (40 Vértices)
 void pass (bool *aux){
@@ -229,12 +259,13 @@ aux[67] = vet[32] ;
 aux[68] = ( vet[19] && vet[13] ) && ! ( vet[33] || vet[7] ) ;
 aux[69] = vet[7] ;
 }
+
 */
 
 // Equações Biológicas
-/*
+
 // * CAC network Reduzida (21 Vértices)
-void pass (bool *aux){
+void pass (bool *aux, string name){
     bool vet[SIZE];
     for (int i=0; i<SIZE; i++){
         vet[i]= aux[i];
@@ -254,17 +285,31 @@ void pass (bool *aux){
     aux[12] = ( vet[15] && vet[0] ) && ! vet[4] ;
     aux[13] = vet[6] ;
     aux[14] = vet[15] && ! vet[4] ;
-    aux[15] = ( vet[16] || vet[9]3 ) && ! vet[12] ;
+    aux[15] = ( vet[16] || vet[9] ) && ! vet[12] ;
     aux[16] = vet[15] && ! ( vet[13] || vet[10] ) ;
-    aux[17] = vet[18] ; (int i=0; i<SIZE; i++){
-    cout << aux[i] << " ";
-}
-cout << en
+    aux[17] = vet[18] ; 
     aux[18] = vet[8] ;
     aux[19] = vet[11] ;
     aux[20] = vet[3] && ! vet[14] ;
+
+    // cout << name << ": ";
+    // // for (int i=0; i<SIZE; i++){
+    // //    cout << aux[i] << " ";
+    // // }
+    // cout<< binarice(aux);
+    // cout << endl;
 }
-*/
+
+int binarice(bool *vect){
+    int num =0;    
+    for(size_t i = 0; i < SIZE; i++)
+    {
+        int pos = (SIZE-1)-i;
+        num |= vect[i] << pos;
+    }
+    return num;
+    
+}
 
 void runGNR(int inicio, int fim) {
     bool s0[SIZE];
@@ -277,47 +322,101 @@ void runGNR(int inicio, int fim) {
     #pragma omp parallel private(s0,s1,period,transient) // Cada thread tem seu próprio s0 e s1 para executar a sua parte do for
     #pragma omp for schedule(static)
     for (unsigned long long int i = inicio; i <= fim; i++) {
-            initialState(i, s0, s1, SIZE);
-            std::cout << "Inicial: " << i << std::endl;
-            for(int i=0; i<SIZE; i++){
-              cout << s0[i];
-            }
-             cout << endl;
-	    	period = 0;
-	    	transient = 0;
-            do {
+
+        string at = "";
+        initialState(i, s0, s1, SIZE);
+        // std::cout << "Inicial: " << i << std::endl;
+        // for(int i=0; i<SIZE; i++){
+        //     cout << s0[i];
+        // }
+        
+        // cout << endl;
+        
+        period = 0;
+        transient =0;
+        do {
             pass(s0,"s0");
             pass(s1,"s1");
             pass(s1,"s1");
-            transient++;
-			// for(int i=0; i<SIZE; i++){
-			// 	cout << s0[i];
-			// }
-			//  cout << endl;
+        
+            // transient++;
+            // for(int i=0; i<SIZE; i++){
+            // 	cout << s0[i];
+            // }
+            //  cout << endl;
         } while (!equals(s0, s1, SIZE));
 
-        do {
-            pass(s1,"s1");
-            period++;
-        } while (!equals(s0, s1, SIZE));
-        period--;
-		// transient--;
+        // transient = 1;
+        stringstream bintostr;
+        bintostr << binarice(s0);
+        
+        at = bintostr.str()+" ";
+        size_t found;
+        bool already = false;
+        int pos_found = -1;
+        #pragma omp critical
+        {
+        for( Tabela::iterator it = atractor.begin(); it != atractor.end(); ++it )
+        {
+            found = it->first.find(at);
+            if(found != string::npos){
+                already = true;
+                at = it->first;
+                period = it->second.begin()->first;
+                pos_found = found;
+            }
+        }
+        }
+        // cout << "ATRACTOR "<< at<< endl;
+        if(!already){
+            do {
+                pass(s1,"s1");
+                period++;
+                if(!equals(s0, s1, SIZE)){
+                    stringstream bintostr;
+                    bintostr << binarice(s1);
+                    at += bintostr.str()+" ";  
+                }
+            } while (!equals(s0, s1, SIZE)); 
+            // atractor[at][period] = 1;
+        }
+        // else{
+            // atractor[at][period] += 1;
+        // }
+        
+            // period--;
+            // transient--;
+        
+        // if(already){
+        //     cout << "FOUND"<<endl;
+            
+            // if(atractor[at][period] !=0 )
+       #pragma omp critical
+        {
+            atractor[at][period] += 1;
+        }
+        // }else
+		// {    
+        //     if(atractor[at][period] < transient)
+        //         atractor[at][period] = transient;
+        // }
+        
+	    // std::cout << "\ntran "<< transient << " ";
+        // std::cout << "per" << period << std::endl;
 
-	std::cout << "\ntran "<< transient << " ";
-	std::cout << "per" << period << std::endl;
+        // cout << "\nattr: ";
 
-  cout << "\nattr: ";
-
-    for(int i=0; i<SIZE; i++){
-  		cout << s1[i];
-  	}
-  	cout << "\n"<<endl;
+        // for(int i=0; i<SIZE; i++){
+        //     cout << s1[i];
+        // }
+  	    // cout << "\n"<<endl;
 
 
 
-  period = 0;
-  transient = 0;
+        period = 0;
+        transient = 0;
     }
+
 	tock = omp_get_wtime();;
 	cout << "Time elapse: " << tock-tick << endl;
 
