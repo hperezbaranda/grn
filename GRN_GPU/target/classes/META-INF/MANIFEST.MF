@@ -1,0 +1,21 @@
+Manifest-Version: 1.0
+Bundle-SymbolicName: org.cytoscape.GRN_GPU
+Bundle-Name: GRN App
+Bundle-Version: 1.0
+Built-By: hector
+Bundle-ManifestVersion: 2
+Bnd-LastModified: 1544614839013
+Bundle-Activator: org.cytoscape.grn.internal.CyActivator
+Import-Package: javax.swing,org.cytoscape.application;version="[3.0,4)
+ ",org.cytoscape.application.swing;version="[3.0,4)",org.cytoscape.mod
+ el;version="[3.0,4)",org.cytoscape.model.events;version="[3.0,4)",org
+ .cytoscape.model.subnetwork;version="[3.0,4)",org.cytoscape.service.u
+ til;version="[3.0,4)",org.cytoscape.session;version="[3.0,4)",org.cyt
+ oscape.task,org.cytoscape.view.model;version="[3.0,4)",org.cytoscape.
+ work;version="[3.0,4)",org.jfree.chart,org.jfree.chart.axis,org.jfree
+ .chart.labels,org.jfree.chart.plot,org.jfree.chart.renderer.category,
+ org.jfree.data.category,org.osgi.framework;version="[1.5,2)"
+Created-By: Apache Maven Bundle Plugin
+Tool: Bnd-1.15.0
+Build-Jdk: 1.8.0_181
+
