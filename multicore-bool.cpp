@@ -8,7 +8,7 @@
 #include <fstream>
 
 #define SIZE 21
-#define NUMTHREADS 1024
+#define NUMTHREADS 1
 
 
 using namespace std;
@@ -24,21 +24,39 @@ string boolArraytoString(bool *vet, int size);
 unsigned long long int boolArraytoInt(bool *vet, int size);
 void runGNR (int inicio, int fim);
 
+int* eqSizeCPU;
+
 int main(int argc, char **argv) {
+    int nEq;
     filebuf fb;
     if(!fb.open(argv[1],ios::in))
     {
         cerr << "Erro ao abrir arquivo de entrada " << argv[1] <<endl;
         exit(0);
     }
+    istream is(&fb);
+    is >> nEq;
+
+    size_t bytes = sizeof(int)*nEq;
+    eqSizeCPU = (int *)malloc(bytes);
     unsigned long int estadosIniciais;
-    estadosIniciais = (unsigned long int) pow(2, SIZE)-1;
+    estadosIniciais = (unsigned long int) pow(2, nEq)-1;
     unsigned int period = 0;
     unsigned int transient = 0;
     omp_set_num_threads(NUMTHREADS);
     unsigned long int inicio=0;
     unsigned long int dadosporThread = (estadosIniciais/NUMTHREADS)-1;
     unsigned long int fim = dadosporThread;
+
+    #pragma parallel for
+    for(int i = 0; i < nEq; i++)
+    {
+        is >> eqSizeCPU[i];
+    }
+
+
+
+    
     runGNR(0,estadosIniciais);
     for( Tabela::iterator it = atractor.begin(); it != atractor.end(); ++it )
     {
@@ -183,7 +201,8 @@ aux[38] = ( ( vet[20] ) & ! ( vet[0] ) ) | ( ( vet[1] ) & ! ( vet[0] ) );
 
 //  CAC Network ( 69 Vértices )
 void pass (bool *aux){
-    bool vet[SIZE];
+    bool vet[SIZE];istream is(&fb);
+    is >> nEq;
  for (int i=0; i<SIZE; i++){
      vet[i] = aux[i];
 
@@ -222,7 +241,7 @@ aux[30] = vet[10] || vet[52] || vet[53] ;
 aux[31] = ( vet[4] || vet[51] || vet[10] ) && ! vet[6] ;
 aux[32] = ! vet[23] ;
 aux[33] = ( vet[34] || vet[45] ) && ! ( vet[21] || vet[7] ) ;
-aux[34] = ( vet[38] || vet[26] || vet[0] ) && ! vet[28] ;
+aux[34] = ( vet[38] || vet[26] || vet[0] ) && ! vet[28] ;8 -6 2
 aux[35] = vet[12];
 aux[36] = ( vet[15] || vet[40] ) && ! vet[38] ;
 aux[37] = vet[10] && ! vet[3] ;
@@ -261,7 +280,14 @@ aux[69] = vet[7] ;
 }
 
 */
-
+void pass1 (double state, int numEq){
+    
+    for(size_t i = 0; i < numEq; i++)
+    {
+        int a = eqSizeCPU[1];
+    }
+    
+}
 // Equações Biológicas
 
 // * CAC network Reduzida (21 Vértices)
@@ -315,13 +341,13 @@ void runGNR(int inicio, int fim) {
     bool s0[SIZE];
     bool s1[SIZE];
     unsigned long long int period = 0;
-    unsigned long int transient = 0;
+    // unsigned long int transient = 0;
 
 	double tick, tock;
 	tick = omp_get_wtime();
-    #pragma omp parallel private(s0,s1,period,transient) // Cada thread tem seu próprio s0 e s1 para executar a sua parte do for
+    #pragma omp parallel private(s0,s1,period) // Cada thread tem seu próprio s0 e s1 para executar a sua parte do for
     #pragma omp for schedule(static)
-    for (unsigned long long int i = inicio; i <= fim; i++) {
+    for (unsigned long long int i = inicio; i <= 1; i++) {
 
         string at = "";
         initialState(i, s0, s1, SIZE);
@@ -333,7 +359,7 @@ void runGNR(int inicio, int fim) {
         // cout << endl;
         
         period = 0;
-        transient =0;
+        // transient =0;
         do {
             pass(s0,"s0");
             pass(s1,"s1");
@@ -414,7 +440,7 @@ void runGNR(int inicio, int fim) {
 
 
         period = 0;
-        transient = 0;
+        // transient = 0;
     }
 
 	tock = omp_get_wtime();;
