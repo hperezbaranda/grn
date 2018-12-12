@@ -143,6 +143,8 @@ public class Simulation extends AbstractCyAction {
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
+//		System.out.println(Math.pow(2,64));
+//		System.out.println(Long.parseLong("18446744073709551616"));
 		/*
 //		Bar
 		
@@ -430,6 +432,18 @@ public class Simulation extends AbstractCyAction {
 								int cant = Integer.parseInt(tmpline[0]);
 								long tmpuid =0;
 								CyNode first = attnetwork.addNode();
+//								String ats ="";
+//								if (tmpline.length > 19) {
+//									int loop = 0;
+//									if(tmpline.length %19 !=0) {
+//										loop = (tmpline.length /19)+1;
+//									}else {
+//										loop = (tmpline.length /19);
+//									}
+//									for (int j = 0; j < loop; j++) {
+//										long ats_tmp = Long.parseLong(tmpline[1].substring(j*19, j*19+19+1));
+//									}
+//								}
 								long ats = Long.parseLong(tmpline[1]);
 								attnetwork.getRow(first).set("name",Long.toHexString(ats)+"");
 //								attnetwork.getRow(first).set("name",tmpline[1]);
@@ -463,7 +477,7 @@ public class Simulation extends AbstractCyAction {
 			
 		}
 		catch (Exception e1) {
-//			e1.printStackTrace();
+			e1.printStackTrace();
 			JOptionPane.showMessageDialog(null, "Erro na leitura e interpretação do grafo\n"+ e1.getMessage(), "Erro",JOptionPane.ERROR_MESSAGE);
 		}
 		

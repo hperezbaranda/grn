@@ -210,15 +210,56 @@ public class Caracteristics  extends AbstractCyAction {
 		}				
 	}
 	
-	public int HammingDistance(String a, String b) {
-	
-		char[] ar =a.toCharArray(); 
-		for (int i = 0; i < ar.length; i++) {
-			System.out.println(ar[i]);
-		}
+	public long HammingDistance(String a, String b) {
 		
+		if(a.length()>19) {
+			
+			if(a.length()>b.length()) {
+				String concat="";
+				for (int i = 0; i < a.length()-b.length(); i++) {
+					concat+="0";
+				}
+				b= concat.concat(b);
+			}
 		
-		return 0;
+			String at ="";
+			if (a.length() > 2) {
+				int loop = a.length() / 2;
+				
+				int top =  a.length();
+				for (int j = 0; j < loop; j++) {
+					System.out.println(a.substring(top-2, top));
+					
+					at +=a.substring(top-2, top)+"_";
+					top -=2; 
+				}
+				if(a.length()%2 !=0) {
+					System.out.println(a.substring(0, top));
+					at +=a.substring(0, top);
+				}
+			}
+			String at2 ="";
+			if (b.length() > 2) {
+				int loop = b.length() / 2;
+				
+				int top =  b.length();
+				for (int j = 0; j < loop; j++) {
+					System.out.println(b.substring(top-2, top));
+					
+					at2 +=b.substring(top-2, top)+"_";
+					top -=2; 
+				}
+				if(b.length()%2 !=0) {
+					System.out.println(b.substring(0, top));
+					at2 +=b.substring(0, top);
+				}
+			}
+			System.out.println(at);
+			System.out.println(at2);
+		}		
+		long distance = Long.parseLong(a)^Long.parseLong(b);
+		System.out.println(distance);
+		return distance;
 	}
 	
 //	public int AtractorHammingDistance(int a ) {
@@ -327,7 +368,7 @@ public class Caracteristics  extends AbstractCyAction {
 			
 		
 			String name ="saida.txt";
-			System.out.println(rootNet.getRow(rootNet).get(CyNetwork.NAME, String.class).split("-").length > 1);
+//			System.out.println(rootNet.getRow(rootNet).get(CyNetwork.NAME, String.class).split("-").length > 1);
 			if(rootNet.getRow(rootNet).get(CyNetwork.NAME, String.class).indexOf("Atratores") != -1 && rootNet.getRow(rootNet).get(CyNetwork.NAME, String.class).split("-").length > 1) {
 				name = "mutations_"+rootNet.getRow(rootNet).get(CyNetwork.NAME, String.class).split("-")[1]+".txt";
 			}
@@ -338,7 +379,7 @@ public class Caracteristics  extends AbstractCyAction {
 		
 //	    AtractorForSize("saida.txt");
 //	    HammingAtractors("saida.txt");
-	    HammingDistance("hec", "hac");
+	    HammingDistance("1181", "181");
 	}
 
 }

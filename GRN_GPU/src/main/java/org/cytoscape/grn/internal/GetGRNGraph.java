@@ -73,6 +73,8 @@ public class GetGRNGraph extends AbstractCyAction {
 	@Override
 	public void actionPerformed(ActionEvent e) {
 	
+		System.out.println(getClass().getProtectionDomain().getCodeSource().getLocation().toString());
+		System.out.println(System.getProperty("user.dir"));
 //		resetListener.resetInit();
 		fc = new JFileChooser();
 		int value = fc.showOpenDialog(null);

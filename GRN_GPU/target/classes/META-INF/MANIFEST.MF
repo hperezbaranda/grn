@@ -4,7 +4,7 @@ Bundle-Name: GRN App
 Bundle-Version: 1.0
 Built-By: hector
 Bundle-ManifestVersion: 2
-Bnd-LastModified: 1544614839013
+Bnd-LastModified: 1544646295240
 Bundle-Activator: org.cytoscape.grn.internal.CyActivator
 Import-Package: javax.swing,org.cytoscape.application;version="[3.0,4)
  ",org.cytoscape.application.swing;version="[3.0,4)",org.cytoscape.mod
