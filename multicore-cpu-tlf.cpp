@@ -9,7 +9,7 @@
 
 // #define SIZE 21
 #define NUMTHREADS 1024
-#define simN 1
+#define simN 2097152
 
 using namespace std;
 typedef map <string,map <int,int> > Tabela;
@@ -43,8 +43,10 @@ int main(int argc, char **argv) {
 
     unsigned long int estadosIniciais;
     // estadosIniciais = (unsigned long int) pow(2, nEq)-1;
-    estadosIniciais = simN;
-    // cout << estadosIniciais << endl;
+    stringstream numsimulation;
+    numsimulation << argv[2];
+    numsimulation >> estadosIniciais;
+    //cout << "estados iniciais: "<<estadosIniciais << endl;
     unsigned int period = 0;
     unsigned int transient = 0;
     omp_set_num_threads(NUMTHREADS);
@@ -170,7 +172,7 @@ void runGNR(int inicio, int fim) {
 	tick = omp_get_wtime();
     #pragma omp parallel private(s0,s1,period) // Cada thread tem seu próprio s0 e s1 para executar a sua parte do for
     #pragma omp for schedule(static)
-    for (unsigned long long int i = inicio; i <= fim; i++) {
+    for (unsigned long long int i = inicio; i < fim; i++) {
         string at = "";       
         s0 = s1 = i;
         //s0=s1 = rand() % fim;
