@@ -94,11 +94,11 @@ public class GetGRNGraph extends AbstractCyAction {
 			try {
 				Process process = builder.start();
 				process.waitFor();
-				System.out.println("python "+  dest+"/grn_gpu/teste_cytoscape.py"+fc.getSelectedFile().toString());
+				System.out.println("python "+  dest+"/grn_gpu/load_graph.py"+fc.getSelectedFile().toString());
 				builder = new ProcessBuilder("python3",  dest+"/grn_gpu/load_graph.py",fc.getSelectedFile().toString(),"0");
 //				builder = new ProcessBuilder("sh",  dest+"/grn_gpu/tlf.sh");
 				final Process process1 = builder.start();
-				JOptionPane pane = new JOptionPane("Pode demorar um tempo");
+				JOptionPane pane = new JOptionPane("Loading Graph..");
 				final JDialog dialog = pane.createDialog(null, "Processing");
 				dialog.setModal(true);
 				dialog.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
@@ -142,10 +142,10 @@ public class GetGRNGraph extends AbstractCyAction {
 				int process_result = process1.waitFor();
 				
 				if(process_result !=0) {
-					JOptionPane.showMessageDialog(null, "Erro na leitura e interpretação do grafo "+ error, "Erro",JOptionPane.ERROR_MESSAGE);
+					JOptionPane.showMessageDialog(null, "Error reading graph "+ error, "Erro",JOptionPane.ERROR_MESSAGE);
 					
 				}
-				System.out.println("Process result: "+ process_result);
+				System.out.println("Process result1: "+ process_result);
 				
 							
 //				System.out.println("Que fue del msg: "+selectedValue);

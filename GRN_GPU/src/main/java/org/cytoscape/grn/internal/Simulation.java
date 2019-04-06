@@ -8,12 +8,11 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.text.DecimalFormat;
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 
-import javax.management.AttributeNotFoundException;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JOptionPane;
@@ -29,23 +28,9 @@ import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.session.CyNetworkNaming;
-import org.cytoscape.task.NetworkTaskFactory;
-import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.CyNetworkViewFactory;
-import org.cytoscape.view.model.CyNetworkViewManager;
-import org.cytoscape.work.AbstractTask;
-import org.cytoscape.work.TaskIterator;
-import org.cytoscape.work.TaskMonitor;
 import org.jfree.chart.ChartFrame;
 import org.jfree.chart.JFreeChart;
-import org.jfree.chart.axis.CategoryAxis;
-import org.jfree.chart.axis.NumberAxis;
-import org.jfree.chart.axis.ValueAxis;
-import org.jfree.chart.labels.StandardCategoryItemLabelGenerator;
-import org.jfree.chart.plot.CategoryPlot;
-import org.jfree.chart.plot.PlotOrientation;
-import org.jfree.chart.renderer.category.BarRenderer;
-import org.jfree.data.category.DefaultCategoryDataset;
+//import org.cytoscape.group;
 
 
 public class Simulation extends AbstractCyAction {
@@ -55,18 +40,20 @@ public class Simulation extends AbstractCyAction {
 	private CyNetworkNaming networkNaming;
 	private CyApplicationManager networkAppManager;
 	private Caracteristics showgraph;
+	private CyRootNetworkManager rootNetworkMang;
 	private long USID;
 	CySubNetwork myNet = null;
 	int cont;
 	
 	public Simulation(CyApplicationManager cyApplicationManager,CyNetworkFactory cnf,CyNetworkManager networkManager, 
-			CyNetworkNaming name){
+			CyNetworkNaming name, CyRootNetworkManager rootnetmng){
 		super("Run Simulation");				
 		setPreferredMenu("Apps.TLF");
 		this.networkFactory = cnf;
 		this.networkManager = networkManager;
 		this.networkNaming = name;
 		this.networkAppManager = cyApplicationManager;
+		this.rootNetworkMang = rootnetmng;
 		this.showgraph = new Caracteristics(cyApplicationManager, cnf ,name);
 		this.USID = 0;
 		this.cont = 0;
@@ -113,6 +100,28 @@ public class Simulation extends AbstractCyAction {
 		}
 	}
 	
+	public String ProcessThresholdLine(String id, String[] line,List<String> list) {
+		String s = id+",";
+		String eq = "";
+		
+		for(String i : line) {
+//			System.out.println(i);
+			if(isNum(i) ) {
+				eq+=i+" ";
+			}else {
+				try {
+//					System.out.println(list.indexOf(i));
+					if(list.indexOf(i) != -1) {
+						eq+=list.indexOf(i)+" ";
+					}
+				}catch (Exception e) {
+					continue;
+				}
+			}
+		}
+		return s+eq;
+	}
+	
 	public void CopyFile(String oldText, String newText) {
 		File f1 = new File(oldText);
 		File f2 = new File(newText);
@@ -139,7 +148,17 @@ public class Simulation extends AbstractCyAction {
 	
 	String error="";
 	
-		
+	public static boolean isNum(String strNum) {
+	    boolean ret = true;
+	    try {
+
+	        Double.parseDouble(strNum);
+
+	    }catch (NumberFormatException e) {
+	        ret = false;
+	    }
+	    return ret;
+	}
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
@@ -246,7 +265,7 @@ public class Simulation extends AbstractCyAction {
 		try {
 			myNet = (CySubNetwork)networkAppManager.getCurrentNetwork();
 			if(myNet ==  null) {
-				throw new Exception("Nao existe um grafo para simular");
+				throw new Exception("There is not graph to simulate");
 			}
 			CyRootNetwork rootNet =myNet.getRootNetwork();
 			
@@ -258,81 +277,113 @@ public class Simulation extends AbstractCyAction {
 			}
 //			myNet = (CyNetwork)networkManager.getNetworkSet().toArray()[0];
 			String dir = System.getProperty("user.dir");
-			File f1 = new File(dir+"/grn_gpu/tmpInput.txt");
-			FileWriter fw = new FileWriter(f1);
-            BufferedWriter out = new BufferedWriter(fw);
-            String s="";
+//			File f1 = new File(dir+"/grn_gpu/tmpInput.txt");
+//			FileWriter fw = new FileWriter(f1);
+//            BufferedWriter out = new BufferedWriter(fw);
+            
             
             CyTable t = myNet.getDefaultNodeTable();
+            List<String>listNodes = t.getColumn("id").getValues(String.class);
+            Collections.sort(listNodes);
+            
+            String equations[] = new String[t.getAllRows().size()]; 
             for (int i = 0; i < t.getAllRows().size(); i++) {
-            	s = t.getAllRows().get(i).get("id", String.class) +" = "+t.getAllRows().get(i).get("equation", String.class);
-            	if(t.getAllRows().get(i).get("equation", String.class) != null) {
-            		out.write(s+System.lineSeparator());
-            	}else {
-            		out.write(t.getAllRows().get(i).get("id", String.class)+System.lineSeparator());			
-            	}
+            	String id = t.getAllRows().get(i).get("name", String.class);
+            	String linenew = this.ProcessThresholdLine(id,t.getAllRows().get(i).get("eq. TLF", String.class).split(" "), listNodes);
+//            	System.out.println("Nueva "+linenew);
+            	int index = listNodes.indexOf(linenew.split(",")[0]);
+            	equations[index]=linenew.split(",")[1];
+//            	s = t.getAllRows().get(i).get("id", String.class) +" = "+t.getAllRows().get(i).get("equation", String.class);
+//            	if(t.getAllRows().get(i).get("equation", String.class) != null) {
+//            		out.write(s+System.lineSeparator());
+//            	}else {
+//            		out.write(t.getAllRows().get(i).get("id", String.class)+System.lineSeparator());			
+//            	}
+			}
+//            out.flush();
+//            out.close();
+            
+            String dir1 = System.getProperty("user.dir");
+			File f11 = new File(dir1+"/grn_gpu/pesosTabela.txt");
+			FileWriter fw1= new FileWriter(f11);
+            BufferedWriter out1 = new BufferedWriter(fw1);
+            
+            out1.write( t.getAllRows().size()+System.lineSeparator());
+            
+            for (String string : equations) {
             	
-				System.out.println(s);
+            	out1.write(((string.split(" ").length-1)/2)+" ");
+				System.out.println(string+"----"+ (string.split(" ").length-1)/2);
 			}
-//            for(String s : lines)
-//                 out.write(s+System.lineSeparator());
-            out.flush();
-            out.close();
-//            init++;
-          
-            ProcessBuilder builder = new ProcessBuilder("python3",  dir+"/grn_gpu/load_graph.py",dir+"/grn_gpu/tmpInput.txt","1");
-            final Process process1 = builder.start();
-			JOptionPane pane = new JOptionPane("Pode demorar um tempo");
-			final JDialog dialog = pane.createDialog(null, "Processing");
-			dialog.setModal(true);
-			dialog.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
-			
-			SwingWorker<Void,Void> worker = new SwingWorker<Void,Void>()
-			{
-			    @Override
-			    protected Void doInBackground()
-			    {
-			    	BufferedReader input = new BufferedReader(new InputStreamReader(process1.getInputStream()));
-		            String line = null; 
-		            try {
-		                while ((line = input.readLine()) != null) {
-		                    System.out.println(line);
-		                    error = line;
-		                }
-		                
-		            } catch (IOException e) {
-		                e.printStackTrace();
-		            }
-		            return null;
-			    }
-			  
-			    @Override
-			    protected void done()
-			    {
-			        dialog.dispose();
-			    }
-			};
-			worker.execute();
-			dialog.setVisible(true);
-				
-			Object selectedValue = null;
-			selectedValue = pane.getValue();
-			
-			if (selectedValue.equals( 0) || selectedValue.equals(-1)) {
-				process1.destroy();
+            out1.write(System.lineSeparator());
+            for (String string : equations) {
+            	 out1.write(string+System.lineSeparator());
 			}
-			int process_result = process1.waitFor();
-			
-			if(process_result !=0) {
-				JOptionPane.showMessageDialog(null, "Erro na leitura e interpretação do grafo\n"+ error, "Erro",JOptionPane.ERROR_MESSAGE);
-				return;
-			}	
+           
+            out1.flush();
+            out1.close();
+            
+//            ProcessBuilder builder = new ProcessBuilder("python3",  dir+"/grn_gpu/load_graph.py",dir+"/grn_gpu/tmpInput.txt","1");
+//            final Process process1 = builder.start();
+//			JOptionPane pane = new JOptionPane("Processing to thresholding graph...");
+//			final JDialog dialog = pane.createDialog(null, "Processing");
+//			dialog.setModal(true);
+//			dialog.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+//			
+//			SwingWorker<Void,Void> worker = new SwingWorker<Void,Void>()
+//			{
+//			    @Override
+//			    protected Void doInBackground()
+//			    {
+//			    	BufferedReader input = new BufferedReader(new InputStreamReader(process1.getInputStream()));
+//		            String line = null; 
+//		            try {
+//		                while ((line = input.readLine()) != null) {
+////		                    System.out.println(line);
+//		                    error = line;
+//		                }
+//		                
+//		            } catch (IOException e) {
+//		                e.printStackTrace();
+//		            }
+//		            return null;
+//			    }
+//			  
+//			    @Override
+//			    protected void done()
+//			    {
+//			        dialog.dispose();
+//			    }
+//			};
+//			worker.execute();
+//			dialog.setVisible(true);
+//				
+//			Object selectedValue = null;
+//			selectedValue = pane.getValue();
+//			
+//			if (selectedValue.equals( 0) || selectedValue.equals(-1)) {
+//				process1.destroy();
+//			}
+//			int process_result = process1.waitFor();
+//			
+//			if(process_result !=0) {
+//				JOptionPane.showMessageDialog(null, "Error reading the graph\n"+ error, "Erro",JOptionPane.ERROR_MESSAGE);
+//				return;
+//			}	
+//			
 			Object[] options = { "CPU", "GPU"};
 			JComboBox<String> optionList = new JComboBox(options);
 			optionList.setSelectedIndex(0);
-			JOptionPane.showMessageDialog(null, optionList,"Ferramenta para rodar simulação", JOptionPane.QUESTION_MESSAGE);
+			JOptionPane.showMessageDialog(null, optionList,"Simulation", JOptionPane.QUESTION_MESSAGE);
 			dir = System.getProperty("user.dir")+"/grn_gpu/makefile";
-			ModifyText(dir,"tecnologia = " ,"tecnologia =  "+optionList.getSelectedItem());				
+			ModifyText(dir,"tecnologia = " ,"tecnologia =  "+optionList.getSelectedItem());	
+			if(mutations) {
+				ModifyText(dir, "saida = ", "saida = mutations_"+clonenumber+".txt");
+			}
+			else
+			{
+				ModifyText(dir, "saida = ", "saida = saida.txt");
+			}
 			int numNodes = myNet.getNodeCount();
 			dir = System.getProperty("user.dir")+"/grn_gpu/multicore-tlf-tabela.cu";
 			ModifyText(dir,"#define TAMANHO_VETOR" ,"#define TAMANHO_VETOR "+numNodes);
@@ -340,156 +391,188 @@ public class Simulation extends AbstractCyAction {
 			
 //			para verificar los cambios
 			
-			int  nSim = (int) (Math.pow(2, numNodes));
+			long  nSim = (long) (Math.pow(2, numNodes));
 					
-			String rnSim = JOptionPane.showInputDialog("Quantas simulações vai rodar?",nSim);
-			int real=0;
+			String rnSim = JOptionPane.showInputDialog("How many simulation?",nSim);
+			long real=0;
 			if(rnSim != null)
 			{
-				real =(Integer.parseInt(rnSim) > nSim) ? nSim : Integer.parseInt(rnSim);
+				real =(Long.parseLong(rnSim) > nSim) ? nSim : Long.parseLong(rnSim);
 			}
 				
 			if(real > 0) {
 				ModifyText(dir,"simN =" ,"simN ="+(real));
-				dir = System.getProperty("user.dir")+"/grn_gpu/multicore-cpu-tlf.cpp";
-				ModifyText(dir,"#define simN" ,"#define simN "+(real));
+//				dir = System.getProperty("user.dir")+"/grn_gpu/multicore-cpu-tlf.cpp";
+//				ModifyText(dir,"#define simN" ,"#define simN "+(real));
 				
 		        ProcessBuilder builder1 = new ProcessBuilder("make","-C","grn_gpu/");
 					
-						final Process process = builder1.start();
-						
-						JOptionPane pane1 = new JOptionPane("Pode demorar um tempo");
-						final JDialog dialog1 = pane1.createDialog(null, "Processing");
-						dialog1.setModal(true);
-						dialog1.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
-						SwingWorker<Void,Void> worker1 = new SwingWorker<Void,Void>()
-						{
-						    @Override
-						    protected Void doInBackground()
-						    {
-						    	BufferedReader input = new BufferedReader(new InputStreamReader(process.getInputStream()));
-					            String line = null; 
-					            try {
-					                while ((line = input.readLine()) != null) {
-					                    System.out.println(line);
-					                    error = line;
-					                }
-					                
-					            } catch (IOException e) {
-					                e.printStackTrace();
-					            }
-					            return null;
-						    }				 
-						    @Override
-						    protected void done()
-						    {
-						        dialog1.dispose();
-						    }
-						};
-						worker1.execute();
-						dialog1.setVisible(true);
-							
-						Object selectedValue1 = null;
-						selectedValue1 = pane.getValue();
+				final Process process = builder1.start();
+				
+				JOptionPane pane1 = new JOptionPane("Making a simulation...");
+				final JDialog dialog1 = pane1.createDialog(null, "Processing");
+				dialog1.setModal(true);
+				dialog1.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+				SwingWorker<Void,Void> worker1 = new SwingWorker<Void,Void>()
+				{
+				    @Override
+				    protected Void doInBackground()
+				    {
+				    	BufferedReader input = new BufferedReader(new InputStreamReader(process.getInputStream()));
+			            String line = null; 
+			            try {
+			                while ((line = input.readLine()) != null) {
+//			                    System.out.println(line);
+			                    error = line;
+			                }
+			                
+			            } catch (IOException e) {
+			                e.printStackTrace();
+			            }
+			            return null;
+				    }				 
+				    @Override
+				    protected void done()
+				    {
+				        dialog1.dispose();
+				    }
+				};
+				worker1.execute();
+				dialog1.setVisible(true);
+					
+				Object selectedValue1 = null;
+				selectedValue1 = pane1.getValue();
 
-						if (selectedValue1.equals( 0) || selectedValue1.equals(-1)) {
-							process.destroy();
-						}
-						int process_result1 = process.waitFor();
-						
-						System.out.println(process_result1);
-						if(process_result1 !=0) {
-							JOptionPane.showMessageDialog(null, "Erro na leitura e interpretação do grafo\n"+error, "Erro",JOptionPane.ERROR_MESSAGE);				
-							return;
-						}else {
-							System.out.println("Process result: "+ process_result1);
-							
-							dir = System.getProperty("user.dir");
-							String filename = "saida.txt"; 
-							if(mutations) {
-								this.CopyFile(dir+"/grn_gpu/saida.txt",dir+"/grn_gpu/mutations_"+clonenumber+".txt");
-								filename = "mutations_"+clonenumber+".txt";
-							}
-								
-							showgraph.BaciaForAtractor(filename);
-							showgraph.AtractorForSize(filename);
-							
-							File f2 = new File(dir+"/grn_gpu/"+filename);
-							List<String> lines =  new ArrayList<String>();
-							String line;
-							BufferedReader reader = new BufferedReader(new FileReader(f2));
-							while ((line = reader.readLine()) != null) {
-				                lines.add(line);
-							}
-							reader.close();
-							
-//					         -------------------------------------------------------------------------------------------------------------------------------------------------------
-					      
-					        CyNetwork attnetwork = networkFactory.createNetwork();
-					        
-					        for (int i = 1; i < lines.size(); i++) {
-								String []tmpline =  lines.get(i).split(" ");
-								int cant = Integer.parseInt(tmpline[0]);
-								long tmpuid =0;
-								CyNode first = attnetwork.addNode();
-//								String ats ="";
-//								if (tmpline.length > 19) {
-//									int loop = 0;
-//									if(tmpline.length %19 !=0) {
-//										loop = (tmpline.length /19)+1;
-//									}else {
-//										loop = (tmpline.length /19);
-//									}
-//									for (int j = 0; j < loop; j++) {
-//										long ats_tmp = Long.parseLong(tmpline[1].substring(j*19, j*19+19+1));
-//									}
-//								}
-								long ats = Long.parseLong(tmpline[1]);
-								attnetwork.getRow(first).set("name",Long.toHexString(ats)+"");
-//								attnetwork.getRow(first).set("name",tmpline[1]);
-								attnetwork.getRow(first).set("selected", true);
-								if(cant > 1) {
-									for (int j = 0; j < cant-1; j++) {
-										CyNode node =  attnetwork.addNode();
-										long atd = Long.parseLong(tmpline[j+2]);
-										attnetwork.getRow(node).set("name",Long.toHexString(atd)+"");
-//										attnetwork.getRow(node).set("name",tmpline[1]);
-										if(j==0) {
-											attnetwork.addEdge(attnetwork.getNode(first.getSUID()), attnetwork.getNode(node.getSUID()), true);
-										}else {
-											attnetwork.addEdge(attnetwork.getNode(tmpuid), attnetwork.getNode(node.getSUID()), true);
-										}
-										tmpuid = node.getSUID();
-									}
-									attnetwork.addEdge(attnetwork.getNode(tmpuid), attnetwork.getNode(first.getSUID()), true);
-								}
-								else {
-									attnetwork.addEdge(attnetwork.getNode(first.getSUID()), attnetwork.getNode(first.getSUID()), true);
-								}			
-							}
-					        attnetwork.getRow(attnetwork).set("name",networkNaming.getSuggestedNetworkTitle("Atratores"+optionList.getSelectedItem()+"-"+clonenumber) );
-							networkManager.addNetwork(attnetwork);
+				if (selectedValue1.equals( 0) || selectedValue1.equals(-1)) {
+					process.destroy();
+				}
+				int process_result1 = process.waitFor();
+				
+				System.out.println(process_result1);
+				if(process_result1 !=0) {
+					JOptionPane.showMessageDialog(null, "Error reading the graph\n"+error, "Erro",JOptionPane.ERROR_MESSAGE);				
+					return;
+				}else {
+					System.out.println("Process result de todo: "+ process_result1);
+					
+					dir = System.getProperty("user.dir");
+					ProcessBuilder builder2 = new ProcessBuilder("python3",  dir+"/grn_gpu/load_graph.py",dir+"/grn_gpu/tmpInput.txt","3");
+		            final Process process2 = builder2.start();
+					JOptionPane pane2 = new JOptionPane("Processing to thresholding graph...");
+					final JDialog dialog2 = pane2.createDialog(null, "Processing");
+					dialog2.setModal(true);
+					dialog2.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+					
+					SwingWorker<Void,Void> worker2 = new SwingWorker<Void,Void>()
+					{
+					    @Override
+					    protected Void doInBackground()
+					    {
+					    	BufferedReader input = new BufferedReader(new InputStreamReader(process2.getInputStream()));
+				            String line = null; 
+				            try {
+				                while ((line = input.readLine()) != null) {
+				                    System.out.println(line);
+				                    error = line;
+				                }
+				                
+				            } catch (IOException e) {
+				                e.printStackTrace();
+				            }
+				            return null;
+					    }
+					  
+					    @Override
+					    protected void done()
+					    {
+					        dialog2.dispose();
+					    }
+					};
+					worker2.execute();
+					dialog2.setVisible(true);
+					
+					dir = System.getProperty("user.dir");
+					String filename = "saida.txt"; 
+					if(mutations) {
+//								this.CopyFile(dir+"/grn_gpu/saida.txt",dir+"/grn_gpu/mutations_"+clonenumber+".txt");
+						filename = "mutations_"+clonenumber+".txt";
 					}
+						
+					showgraph.BaciaForAtractor(filename);
+					showgraph.AtractorForSize(filename);
+					
+					File f2 = new File(dir+"/grn_gpu/"+filename);
+					List<String> lines =  new ArrayList<String>();
+					String line;
+					BufferedReader reader = new BufferedReader(new FileReader(f2));
+					while ((line = reader.readLine()) != null) {
+		                lines.add(line);
+					}
+					reader.close();
+					
+					lines.remove(0);
+					Collections.sort(lines);
+					
+					System.out.println("AQUIIII");
+					for (int i = 0; i < lines.size(); i++) {
+						System.out.println(lines.get(i));
+					}
+					
+//-------------------------------------------------------------------------------------------------------------------------------------------------------
+			      
+					CySubNetwork attnetwork = null;
+					CyRootNetwork rootNet1 = null;
+					
+					for (CyNetwork net : networkManager.getNetworkSet()) {
+						final CyRootNetwork tmpRootNet = rootNetworkMang.getRootNetwork(net);
+						if(tmpRootNet.getRow(tmpRootNet).get(CyNetwork.NAME, String.class) == "Atractors") {
+							rootNet1 = tmpRootNet;
+						}
+					}
+					if(rootNet1 == null) {
+						attnetwork = (CySubNetwork) networkFactory.createNetwork();
+						CyRootNetwork tmpRootNet = attnetwork.getRootNetwork();
+						tmpRootNet.getRow(tmpRootNet).set(CyNetwork.NAME, "Atractors");
+					}
+					else {
+						attnetwork = rootNet1.addSubNetwork();
+					}
+								        
+			        for (int i = 0; i < lines.size(); i++) {
+						String []tmpline =  lines.get(i).split(" ");
+						int cant = Integer.parseInt(tmpline[0]);
+						long tmpuid =0;
+						CyNode first = attnetwork.addNode();
+						long ats = Long.parseUnsignedLong(tmpline[1]);
+						attnetwork.getRow(first).set("name",Long.toHexString(ats)+"");
+						attnetwork.getRow(first).set("selected", true);
+						if(cant > 1) {
+							for (int j = 0; j < cant-1; j++) {
+								CyNode node =  attnetwork.addNode();
+								long atd = Long.parseUnsignedLong(tmpline[j+2]);
+								attnetwork.getRow(node).set("name",Long.toHexString(atd)+"");
+								if(j==0) {
+									attnetwork.addEdge(attnetwork.getNode(first.getSUID()), attnetwork.getNode(node.getSUID()), true);
+								}else {
+									attnetwork.addEdge(attnetwork.getNode(tmpuid), attnetwork.getNode(node.getSUID()), true);
+								}
+								tmpuid = node.getSUID();
+							}
+							attnetwork.addEdge(attnetwork.getNode(tmpuid), attnetwork.getNode(first.getSUID()), true);
+						}
+						else {
+							attnetwork.addEdge(attnetwork.getNode(first.getSUID()), attnetwork.getNode(first.getSUID()), true);
+						}			
+					}
+			        attnetwork.getRow(attnetwork).set("name",networkNaming.getSuggestedNetworkTitle("Atractors"+optionList.getSelectedItem()+"-"+clonenumber) );
+					networkManager.addNetwork(attnetwork);
+				}
 			}
-			
-			
-			
-			
 		}
 		catch (Exception e1) {
 			e1.printStackTrace();
 			JOptionPane.showMessageDialog(null, "Erro na leitura e interpretação do grafo\n"+ e1.getMessage(), "Erro",JOptionPane.ERROR_MESSAGE);
 		}
-		
-		
-		
-			
-		if(System.getProperty("os.name").toLowerCase().startsWith("windows")) {
-			System.out.println("Proximamente");
-		}else if(System.getProperty("os.name").toLowerCase().startsWith("linux")) {
-//			System.out.println(dest);
-		}	
-		
 	}
 
 	

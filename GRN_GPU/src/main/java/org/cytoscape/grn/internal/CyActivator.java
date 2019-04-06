@@ -47,7 +47,7 @@ public class CyActivator extends AbstractCyActivator {
 		cloneprops.setProperty("title","Clone Network");
 		registerService(bc,mutation,NetworkTaskFactory.class,cloneprops);
 		
-		Simulation simulation= new Simulation(cyApplicationManager, cyNetworkFactoryServiceRef, networkManager, cyNetworkNamingServiceRef);
+		Simulation simulation= new Simulation(cyApplicationManager, cyNetworkFactoryServiceRef, networkManager, cyNetworkNamingServiceRef,rootNetwokMng);
 		Properties simprop = new Properties();
 		registerService(bc,simulation,CyAction.class,simprop);
 		

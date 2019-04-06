@@ -4,7 +4,6 @@
 /home/hector/eclipse-workspace/GRN_GPU/src/main/java/org/cytoscape/grn/internal/Caracteristics.java
 /home/hector/eclipse-workspace/GRN_GPU/src/main/java/org/cytoscape/grn/internal/PagerankTask.java
 /home/hector/eclipse-workspace/GRN_GPU/src/main/java/org/cytoscape/grn/internal/CloneNetworkTask.java
-/home/hector/eclipse-workspace/GRN_GPU/src/main/java/org/cytoscape/grn/internal/Ranking.java
 /home/hector/eclipse-workspace/GRN_GPU/src/main/java/org/cytoscape/grn/internal/MyListener.java
 /home/hector/eclipse-workspace/GRN_GPU/src/main/java/org/cytoscape/grn/internal/GetGRNGraph.java
 /home/hector/eclipse-workspace/GRN_GPU/src/main/java/org/cytoscape/grn/internal/CloneNetworkTaskFactory.java

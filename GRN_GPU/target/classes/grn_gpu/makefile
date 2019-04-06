@@ -5,17 +5,18 @@ metrics =--metrics all#--metrics shared_load_transactions_per_request --metrics 
 
 simN =2097152
 input = pesosTabela.txt 
-tecnologia =  GPU
+tecnologia =  CPU
+saida = saida.txt
 
 all: $(tecnologia)
 
 GPU:
 	nvcc -arch=$(arch) $(program).cu -o $(program)
-	./$(program) $(input) $(simN) $(tecnologia) > saida.txt
+	./$(program) $(input) $(simN) $(tecnologia) > $(saida)
 
 CPU:
 	g++ -o multicore-cpu-tlf multicore-cpu-tlf.cpp -fopenmp
-	./$(program_cpu) $(input) $(simN)> saida.txt
+	./$(program_cpu) $(input) $(simN) > $(saida)
 	
 analise:
 	nvprof --unified-memory-profiling off ./$(program) $(input) $(simN)

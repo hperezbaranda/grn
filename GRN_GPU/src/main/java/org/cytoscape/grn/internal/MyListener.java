@@ -24,7 +24,7 @@ public class MyListener implements RowsSetListener
 	
 	public MyListener() {
 		super();
-		init = 0;
+		init = 2;
 	}
 
 	public void resetInit() {
@@ -35,8 +35,8 @@ public class MyListener implements RowsSetListener
 	
 	@Override
 	public void handleEvent(RowsSetEvent e) {
-		if(e.containsColumn("equation")  && e.getSource().getTitle().equals("TLF root shared  node"))
-				System.out.println(e.getSource().getTitle());
+		
+		
 //		if(e.containsColumn("equation") && e.getSource().getTitle().equals("TLF root shared  node")) 
 //				System.out.println("INIT: "+init);
 		

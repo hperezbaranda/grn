@@ -22,11 +22,15 @@ import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.Tunable;
 
 public class CloneNetworkTask extends AbstractTask {
 	
+	@Tunable(description="Numbers of simulation")
 	
-
+	
+	public int num;
+	
 	private Map<CyNode, CyNode> orig2NewNodeMap;
 	private Map<CyNode, CyNode> new2OrigNodeMap;
 	private Map<CyEdge, CyEdge> new2OrigEdgeMap;
@@ -68,19 +72,15 @@ public class CloneNetworkTask extends AbstractTask {
 		this.network = network;
 	}
 
-	public void run(TaskMonitor tm) throws Exception{
-		
+	public void run(TaskMonitor tm) throws Exception{		
 		tm.setProgress(0.0);
-//		final long start = System.currentTimeMillis();
-		
-//		CyNetwork parentNetwork = appMgr.getCurrentNetwork();
+//		network.getRow(network).get(CyNetwork.NAME, String.class);
 		CySubNetwork clone = null;
 		CyRootNetwork rootNet = null;
 		
 		for (CyNetwork net : netmgr.getNetworkSet()) {
 			final CyRootNetwork tmpRootNet = rootNetMgr.getRootNetwork(net);
 			if(tmpRootNet.getRow(tmpRootNet).get(CyNetwork.NAME, String.class) == "Mutations") {
-//				clone = rootNet.addSubNetwork(parentNetwork.getSavePolicy());
 				rootNet = tmpRootNet;
 			}
 		}
@@ -93,12 +93,10 @@ public class CloneNetworkTask extends AbstractTask {
 			clone = rootNet.addSubNetwork(network.getSavePolicy());
 		}
 		
-		
 		final CyNetwork newNet =  cloneNetwork(network,clone);
-//		CyRootNetwork collection = newNet.getRootNetwork();
-//		collection.getRow(collection).set(CyNetwork.NAME,"Mutations");
 		tm.setProgress(0.5);
-		netmgr.addNetwork(newNet);		
+		netmgr.addNetwork(newNet);	
+		tm.setProgress(1.0);
 	}
 
 	public Object getResults(Class type) {

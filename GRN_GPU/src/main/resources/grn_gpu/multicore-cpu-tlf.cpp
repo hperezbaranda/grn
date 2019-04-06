@@ -43,14 +43,16 @@ int main(int argc, char **argv) {
 
     unsigned long int estadosIniciais;
     // estadosIniciais = (unsigned long int) pow(2, nEq)-1;
-    estadosIniciais = simN;
-    // cout << estadosIniciais << endl;
+    stringstream numsimulation;
+    numsimulation << argv[2];
+    numsimulation >> estadosIniciais;
+    //cout << "estados iniciais: "<<estadosIniciais << endl;
     unsigned int period = 0;
     unsigned int transient = 0;
     omp_set_num_threads(NUMTHREADS);
     unsigned long int inicio=0;
-    unsigned long int dadosporThread = (estadosIniciais/NUMTHREADS)-1;
-    unsigned long int fim = dadosporThread;
+    // unsigned long int dadosporThread = (estadosIniciais/NUMTHREADS)-1;
+    // unsigned long int fim = dadosporThread;
 
     int count = 0;
     for(int i = 0; i < nEq; i++)
@@ -170,7 +172,7 @@ void runGNR(int inicio, int fim) {
 	tick = omp_get_wtime();
     #pragma omp parallel private(s0,s1,period) // Cada thread tem seu próprio s0 e s1 para executar a sua parte do for
     #pragma omp for schedule(static)
-    for (unsigned long long int i = inicio; i <= fim; i++) {
+    for (unsigned long long int i = inicio; i < fim; i++) {
         string at = "";       
         s0 = s1 = i;
         //s0=s1 = rand() % fim;

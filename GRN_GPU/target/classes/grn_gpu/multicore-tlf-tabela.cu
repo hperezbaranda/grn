@@ -1,19 +1,18 @@
 #include <iostream>
 #include <cmath>
 #include <stdio.h>
-#include "./common.h"
+#include "common.h"
 #include <cuda_runtime.h>
 #include <curand_kernel.h>
 #include <assert.h>
 #include <fstream>
 #include <string>
-#include <omp.h>
 
 using namespace std;
 
-#define TABLE_SIZE 2048
+#define TABLE_SIZE 1024
 #define BUCKET_SIZE 200
-#define TAMANHO_VETOR 3
+#define TAMANHO_VETOR 41
 #define PESOS_GPU 200
 
 struct HashTable
@@ -50,7 +49,7 @@ HashTable * junta_atratores(HashTable &tabela_atratores,  int *pesos,  int *posI
             int hash = 0;
             //pega os dados dos estado
             unsigned long int s0 = tabela_atratores.atratores[i], s1 = tabela_atratores.atratores[i];
-            unsigned long int numEstados  = tabela_atratores.count[i];
+            unsigned long long numEstados  = tabela_atratores.count[i];
             //zera a posição da tabela
             tabela_atratores.atratores[i] = 0;
             tabela_atratores.count[i] = 0; 
@@ -158,8 +157,7 @@ HashTable * junta_atratores(HashTable &tabela_atratores,  int *pesos,  int *posI
             }
             
             tabela_atratores.atratores[hash] = s0;
-            // tabela_atratores.count[hash] = (numEstados >= tabela_atratores.count[hash]) ? numEstados : tabela_atratores.count[hash];
-            tabela_atratores.count[hash] +=numEstados;
+            tabela_atratores.count[hash] += numEstados;
         }
 
     }
@@ -171,7 +169,7 @@ HashTable * junta_atratores(HashTable &tabela_atratores,  int *pesos,  int *posI
         {
             //extrai os dados do atrator atual
             unsigned long int estado = tabela_atratores.atratores[i];
-            unsigned long int numEstados  = tabela_atratores.count[i];
+            unsigned long long numEstados  = tabela_atratores.count[i];
 
             unsigned long int aux = 0;
 
@@ -286,17 +284,18 @@ HashTable * junta_atratores(HashTable &tabela_atratores,  int *pesos,  int *posI
 //versao CPU
 void sincrono_TabelaCPU(const int * pesos, const int *posIni, const int*eqSize, const int *T,const int nEq, HashTable &tabela_atratores, const unsigned long long MIN_ESTADO, const unsigned long long MAX_ESTADO)
 {
-    #pragma omp parallel private(tabela_atratores,s0,s1,posIni,pesos,eqSize,T)
-    #pragma omp for schedule(static)
-    for(unsigned long long estado = MIN_ESTADO; estado < MAX_ESTADO; estado++)
+    srand(time(NULL));
+
+    for(unsigned long int estado = MIN_ESTADO; estado < MAX_ESTADO; estado++)
     {  
-        unsigned long long s0 = estado, s1 = estado;
+        unsigned long int s0 = rand() % (2<<nEq - 1) + 0;
+        unsigned long int s1 = s0;
         int var,peso;
         // cout << "ESTADO: "<<estado <<endl<<endl;
         do
         {
             //da um passo com s0
-            unsigned long long newEstado = 0; 
+            unsigned long int newEstado = 0; 
             for(int j = 0; j < nEq; j++)
             {   
                 int cal_new = nEq-1-j;
@@ -368,7 +367,7 @@ void sincrono_TabelaCPU(const int * pesos, const int *posIni, const int*eqSize, 
         //Neste ponto s1 = s0
 
         //variaveis auxiliares
-        unsigned long long estadoAtr = 0;
+        unsigned long int estadoAtr = 0;
         int upperBit = -1, lowerBit = -1, hash = 0;
         unsigned long long auxEstado = 0;
 
@@ -396,13 +395,15 @@ void sincrono_TabelaCPU(const int * pesos, const int *posIni, const int*eqSize, 
         
         //insere o estado na tabela hash :
         if(hash >= TABLE_SIZE || hash < 0){
-            printf("Estado : %llu Erro ao calcular o hash : %d\n",estadoAtr,hash);
+            printf("Estado : %lu Erro ao calcular o hash : %d\n",estadoAtr,hash);
             return;
         }
 
         //confere se o balde já está cheio e acha um balde vazio
         if(tabela_atratores.atratores[hash] != 0 && tabela_atratores.count[hash]  == estadoAtr)
-            tabela_atratores.count[hash]++;//se dois estados caem no mesmo balde, soma mais um no estado
+        {
+            tabela_atratores.count[hash]++;//armazena o maior transiente
+        }
         else
         {
             //procura um balde vazio desde que o estado encontrado nao seja igual ao dos baldes encontrados no caminho
@@ -410,7 +411,7 @@ void sincrono_TabelaCPU(const int * pesos, const int *posIni, const int*eqSize, 
 
             if(hash >= TABLE_SIZE) hash = 13;
             tabela_atratores.atratores[hash] = estadoAtr;
-            tabela_atratores.count[hash]++;
+            tabela_atratores.count[hash]++;//armazena o maior transiente
         }
     }
 }
@@ -420,9 +421,11 @@ void sincrono_TabelaCPU(const int * pesos, const int *posIni, const int*eqSize, 
 //versao GPU
 __device__ __constant__ int pesosGPU[PESOS_GPU];
 
-__global__ void sincrono_Tabela(const int *posIni ,const int*eqSize,const int *T, unsigned long int *atratores, unsigned long int *count ,const int nEq,const unsigned long long MIN_ESTADO,  const unsigned long long MAX_ESTADO)
+__global__ void sincrono_Tabela( curandState * curandstate, const int *posIni ,const int*eqSize,const int *T, unsigned long int *atratores, unsigned long int *count ,const int nEq,const unsigned long long MIN_ESTADO,  const unsigned long long MAX_ESTADO)
 {
     //idx da thread também será o estado do grafo
+        
+
     unsigned long int idx = blockDim.x*blockIdx.x + threadIdx.x + MIN_ESTADO;
 
     if(idx < MAX_ESTADO)
@@ -448,9 +451,15 @@ __global__ void sincrono_Tabela(const int *posIni ,const int*eqSize,const int *T
         }
             
         __syncthreads();
+        curand_init(idx,(2<<nEq-1),0,&curandstate[idx]);
+
+        float randf = curand_uniform(&(curandstate[idx]));
+        randf *= ((2<<(nEq-1)) - 0  + 0.999999);
+        randf += 0;
     
         //cada thread faz uma simulação por vez
-        unsigned long int s0=idx, s1=idx;
+        unsigned long int s0=(unsigned long long)truncf(randf);
+        unsigned long int s1=(unsigned long long)truncf(randf);
 
         unsigned long int aux = 0, newEstado = 0;
         
@@ -553,17 +562,30 @@ __global__ void sincrono_Tabela(const int *posIni ,const int*eqSize,const int *T
 
         //confere se o balde já está cheio e acha um balde vazio
         if(stable[1][hash] != 0 && stable[0][hash] == estado)
+        {
             atomicAdd((unsigned long long *)&(stable[1][hash]),(unsigned long long)1);//se dois estados caem no mesmo balde, soma mais um no estado
+        }
         else
         {
             //procura um balde vazio desde que o estado encontrado nao seja igual ao dos baldes encontrados no caminho
             while(stable[1][hash] != 0 && stable[0][hash] != estado) hash++;
-
-            if(hash >= TABLE_SIZE) hash = 13;
             atomicExch((unsigned long long *)&(stable[0][hash]),(unsigned long long)estado);
-            atomicAdd((unsigned long long *)&(stable[1][hash]),(unsigned long long)1); 
+            atomicAdd((unsigned long long *)&(stable[1][hash]),(unsigned long long)1);//se dois estados caem no mesmo balde, soma mais um no estado
         }
         __syncthreads();
+
+        
+        if(idx == 0)
+        {
+            #pragma unroll
+            for(int i = 0; i < TABLE_SIZE; i++)
+            {
+                atratores[i] = 0;
+                count[i] = 0;
+            }
+        }
+        __syncthreads();
+           
 
         if(threadIdx.x == 0)
         {
@@ -572,7 +594,7 @@ __global__ void sincrono_Tabela(const int *posIni ,const int*eqSize,const int *T
             {
                 atomicAdd((unsigned long long *)&(atratores[i]), (unsigned long long)stable[0][i]);
                 atomicAdd((unsigned long long *)&(count[i]), (unsigned long long)stable[1][i]);
-            } 
+            }
         }
         __syncthreads();
 
@@ -651,7 +673,7 @@ int main(int argc, char **argv)
     istream is(&fb);
     is >> nEq;
 
-    int * pesosCPU, *pesoIniCPU, *pesoIniGPU, *eqSizeCPU, *eqSizeGPU,*TCPU,*TGPU;
+    int * pesosCPU/* , *pesosGPU */, *pesoIniCPU, *pesoIniGPU, *eqSizeCPU, *eqSizeGPU,*TCPU,*TGPU;
     unsigned long long *resultCPU, *resultGPU; // peso, tamanho das equações e threshold de cada equação
     size_t bytes = sizeof(int)*nEq;
 
@@ -681,6 +703,7 @@ int main(int argc, char **argv)
     
     //alocando vetores com pesos e re
     pesosCPU = (int *)malloc(sizeof(int)*nPesos*2);
+    //cudaMalloc((int **)&pesosGPU,sizeof(int)*nPesos*2);
 
     int posPeso = 0; //posição dos pesos
     for(int i = 0; i < nEq; i++)
@@ -751,8 +774,13 @@ int main(int argc, char **argv)
     
     if(tec == "GPU")
     {
+        //usar nas funções aleatorias
+        curandState *d_state;
+        cudaMalloc(&d_state, sizeof(curandState));
+
+        //cudaMemcpy(pesosGPU, pesosCPU, sizeof(int)*nPesos*2, cudaMemcpyHostToDevice);
         cudaMemcpyToSymbol(pesosGPU,pesosCPU,sizeof(int)*nPesos*2);//copia memoria do host para o device
-        sincrono_Tabela<<<grid,block,bytes>>>(pesoIniGPU,eqSizeGPU,TGPU,gpuTable.atratores, gpuTable.count,nEq,MIN_ESTADO,MAX_ESTADO);
+        sincrono_Tabela<<<grid,block,bytes>>>(d_state,pesoIniGPU,eqSizeGPU,TGPU,gpuTable.atratores, gpuTable.count,nEq,MIN_ESTADO,MAX_ESTADO);
            
         //extrai resultado da GPU
         cudaMemcpy(cpuTable.atratores, gpuTable.atratores, nBytes, cudaMemcpyDeviceToHost);
@@ -792,10 +820,6 @@ int main(int argc, char **argv)
 
     if(tec == "CPU")
     {
-        /* printf("Modelo Sincrono CPU\n"); */
-        //CPU
-
-        
         sincrono_TabelaCPU(pesosCPU,pesoIniCPU,eqSizeCPU,TCPU,nEq,cpuTable2,MIN_ESTADO,MAX_ESTADO);
         resultadoCPU = junta_atratores(cpuTable2,pesosCPU,pesoIniCPU,eqSizeCPU,TCPU,nEq);
         
