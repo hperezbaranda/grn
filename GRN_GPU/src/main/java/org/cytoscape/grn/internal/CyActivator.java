@@ -47,17 +47,21 @@ public class CyActivator extends AbstractCyActivator {
 		cloneprops.setProperty("title","Clone Network");
 		registerService(bc,mutation,NetworkTaskFactory.class,cloneprops);
 		
-		Simulation simulation= new Simulation(cyApplicationManager, cyNetworkFactoryServiceRef, networkManager, cyNetworkNamingServiceRef,rootNetwokMng);
+		SimTaskFactory simulation= new SimTaskFactory(cyNetworkFactoryServiceRef, networkManager, cyNetworkNamingServiceRef);
 		Properties simprop = new Properties();
-		registerService(bc,simulation,CyAction.class,simprop);
+		simprop.setProperty("preferredMenu","Apps.TLF");
+		simprop.setProperty("title","Run Simulation");
+		registerService(bc,simulation,NetworkTaskFactory.class,simprop);
 		
-		Caracteristics caracteristics= new Caracteristics(cyApplicationManager,cyNetworkFactoryServiceRef,cyNetworkNamingServiceRef);
-		Properties props =  new Properties();
-		registerService(bc,caracteristics,CyAction.class,props);
+		CharacteristicTaskFactory characteristics= new CharacteristicTaskFactory(cyNetworkFactoryServiceRef,cyNetworkNamingServiceRef);
+		Properties characteristicsprops =  new Properties();
+		characteristicsprops.setProperty("preferredMenu","Apps.TLF");
+		characteristicsprops.setProperty("title","Show Result");
+		registerService(bc,characteristics,NetworkTaskFactory.class,characteristicsprops);
 		
-		GetGRNGraph getGRNGraph = new GetGRNGraph(cyApplicationManager,cyNetworkFactoryServiceRef,networkManager,cyNetworkNamingServiceRef,cyNetworkViewManager,cyNetworkViewFactory);
+		GetGRNGraph getGRNGraph = new GetGRNGraph(networkManager);
 		registerService(bc,getGRNGraph,CyAction.class,new Properties());
-		
+				
 		MyListener nodelistener = new MyListener();
 		Properties p = new Properties();
 		registerService(bc, nodelistener, RowsSetListener.class, p);

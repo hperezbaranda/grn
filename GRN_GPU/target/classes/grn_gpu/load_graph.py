@@ -69,12 +69,6 @@ def TLF(table):
 	mini = min([sum([line[i]*tlf[i] for i in range(len(table[1])-1)]) for line in table if line[-1]])
 	tlf.append(mini)
 
-	# for line in table:
-	# 	suma=0
-	# 	for i in range(len(table[0])-1):
-	# 		suma = line[i]+tlf[i]
-	# 	print(suma)
-
 	return tlf
 
 def TesteTlf(tlf):
@@ -105,10 +99,13 @@ if __name__ == '__main__':
 
 	try:
 		print(int(sys.argv[2]))
+		#----------------------------------------------------------------------------------------------------------------
+		# Cleaning exit data
+
 		if int(sys.argv[2]) == 3:
 			print("Abrendo saida.txt")
-			if os.path.exists("grn_gpu/saida.txt"):
-				lines = open("grn_gpu/saida.txt").readlines()
+			if os.path.exists("../saida.txt"):
+				lines = open("../saida.txt").readlines()
 				if len(lines) == 0:
 					command = "saida.txt"
 					print(command)
@@ -132,9 +129,16 @@ if __name__ == '__main__':
 				posdel =list(set(posdel))
 				for e in posdel[::-1]:
 					lines.pop(e)
-				save = open("grn_gpu/saida.txt","w")
+				save = open("../saida.txt","w")
 				save.writelines(lines)
+
+			# End cleaning data
+		#------------------------------------------------------------------------------------------------------------------------------
 		else:
+
+			#--------------------------------------------------------------------------------------------------------------------------
+			# Normal Process
+
 			line = [ i for i in open(sys.argv[1],'r').readlines() if (len(i.strip().split())>3 or (len(i.strip().split())==3 and not i.strip().split()[2].isdigit()))]
 
 			line.sort()
@@ -223,6 +227,9 @@ if __name__ == '__main__':
 				else:
 					orig.append(txt.split(' =')[0]+' = const')
 
+			#-------------------------------------------------------------------------------------------------------------------------------
+			# First Time Runnig need create and send graph to Cytoscape
+
 			if int(sys.argv[2]) == 0:
 				data = pd.DataFrame(graph, columns=['source','target','interaction'])
 				net_name=os.path.basename(sys.argv[1]).split(".")[0]
@@ -261,6 +268,9 @@ if __name__ == '__main__':
 				update_eq = pd.DataFrame(tmp_data,columns=['id','fixed','observe'])
 				net1.update_node_table(update_eq,data_key_col="id")
 
+			# End Fist Time runnig
+			#-----------------------------------------------------------------------------------------------------------------------
+
 			print(orig)
 			print('\n')
 			print("Nodes: "+str(list_ext))
@@ -292,42 +302,13 @@ if __name__ == '__main__':
 		#	print("\n")
 			print("tamanho: "+str(len(lst_tlf)))
 			print("\n")
-
-			# cont = 0
-			# txt="pair<int, int> equacoe["+str(len(lst_tlf))+"] = {"
-			# for  i in lst_tlf:
-			# 	txt+="make_pair("+str(cont)+","+str(len(i))+"), "
-			# 	cont +=len(i)
-			# txt +="};"
-			# print(txt)
-			# print("\n")
-			# # c_tlf = [j for i in lst_tlf for j in i]
-			# c_tlf="pair<int, int> values["+str(cont)+"] = {"
-			# for i in range(len(lst_tlf)):
-			# 	for j in range(len(lst_tlf[i])-1):
-			# 		if int(modif[i][j]) > (len(modif)-1):
-			# 			print(modif[i][j])
-			# 			# id_ext = [z[0] for z in num_ext_id if z[1]==modif[i][j] ][0]
-			# 			# v_id_ext = [y[1] for y in external if y[0] == id_ext][0]
-			# 			# if v_id_ext:
-			# 			# 	c_tlf+="make_pair(-3,"+str(lst_tlf[i][j])+"), "
-			# 			# else:
-			# 			# 	c_tlf+="make_pair(-2,"+str(lst_tlf[i][j])+"), "
-			# 		else:
-			# 			c_tlf+="make_pair("+modif[i][j]+","+str(lst_tlf[i][j])+"), "
-			# 	c_tlf+="make_pair(-1,"+str(lst_tlf[i][-1])+"), "
-			# c_tlf +="};"
-			# print(c_tlf)
-			# print("tamanho: "+str(cont))
-			# print('\n')
-			# #for i in range(len([i for i in orig if i.split("= ")[1] != "const"])):
 			print(external)
 			print()
 			print(num_ext_id)
 			num_ext = [i[1] for i in num_ext_id]
 
 			if int(sys.argv[2]) == 1:
-				entry =  open('grn_gpu/pesosTabela.txt','w')
+				entry =  open('../pesosTabela.txt','w')
 				entry.write(str(len(lst_tlf)+len(external))+'\n')
 				eqtam =""
 				for i in modif:

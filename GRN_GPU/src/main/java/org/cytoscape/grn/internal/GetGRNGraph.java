@@ -52,21 +52,14 @@ public class GetGRNGraph extends AbstractCyAction {
 	private static final long serialVersionUID = 1L;
 	private JFileChooser fc;
 	private MyListener resetListener;
-	private Simulation sim;
+	private SimulationTask sim;
 	private CyNetworkManager networkManager;
 	private String error = "";
 	
-	public GetGRNGraph(CyApplicationManager cyApplicationManager,CyNetworkFactory cnf,CyNetworkManager networkManager, CyNetworkNaming name, 
-			   								CyNetworkViewManager netViewManag, CyNetworkViewFactory networkViewFactory){
+	public GetGRNGraph(CyNetworkManager networkManager){
 		super("Load Boolean Graph");
-//		this.sim = new Simulation(cyApplicationManager, cnf, networkManager, name, netViewManag, networkViewFactory);
-//		ImageIcon icon = new ImageIcon(getClass().getResource("/images/tiger.jpg"));
-//		ImageIcon icon = new ImageIcon(getClass().getResource("/images/tiger.jpg"));
-//		System.out.println("ENTREEEEEEEEEEEEEEEEEEEEEEEEEEEEE");
-//		putValue(LARGE_ICON_KEY, icon);
 		this.networkManager = networkManager;
 		setPreferredMenu("Apps.TLF");
-//		resetListener = new MyListener();
 	}
 	
 	
@@ -75,7 +68,6 @@ public class GetGRNGraph extends AbstractCyAction {
 	
 		System.out.println(getClass().getProtectionDomain().getCodeSource().getLocation().toString());
 		System.out.println(System.getProperty("user.dir"));
-//		resetListener.resetInit();
 		fc = new JFileChooser();
 		int value = fc.showOpenDialog(null);
 		System.out.println(value);
@@ -86,17 +78,12 @@ public class GetGRNGraph extends AbstractCyAction {
 			
 			String source = getClass().getProtectionDomain().getCodeSource().getLocation().toString().split(File.pathSeparator)[1];
 			String dest = System.getProperty("user.dir");
-			
-//			ProcessBuilder builder = new ProcessBuilder("sh",  "teste.sh");
-			ProcessBuilder builder = new ProcessBuilder("jar", "xf", source, "grn_gpu");		
-//			ProcessBuilder builder = new ProcessBuilder("jar", "xf", "/home/hector/eclipse-workspace/parent/sample-get-selected-nodes/target/grn_gpu-1.0.jar", "grn_gpu");
-			
+			ProcessBuilder builder = new ProcessBuilder("jar", "xf", source, "grn_gpu");				
 			try {
 				Process process = builder.start();
 				process.waitFor();
-				System.out.println("python "+  dest+"/grn_gpu/load_graph.py"+fc.getSelectedFile().toString());
-				builder = new ProcessBuilder("python3",  dest+"/grn_gpu/load_graph.py",fc.getSelectedFile().toString(),"0");
-//				builder = new ProcessBuilder("sh",  dest+"/grn_gpu/tlf.sh");
+				System.out.println("python "+  dest+"/grn_gpu/load_graph.py "+fc.getSelectedFile().toString());
+				builder = new ProcessBuilder(dest+"/grn_gpu/venv/bin/python3",  dest+"/grn_gpu/load_graph.py",fc.getSelectedFile().toString(),"0");
 				final Process process1 = builder.start();
 				JOptionPane pane = new JOptionPane("Loading Graph..");
 				final JDialog dialog = pane.createDialog(null, "Processing");
@@ -145,12 +132,7 @@ public class GetGRNGraph extends AbstractCyAction {
 					JOptionPane.showMessageDialog(null, "Error reading graph "+ error, "Erro",JOptionPane.ERROR_MESSAGE);
 					
 				}
-				System.out.println("Process result1: "+ process_result);
-				
-							
-//				System.out.println("Que fue del msg: "+selectedValue);
-//				builder = new ProcessBuilder("rm", "-r", dest+"/grn_gpu/");
-//				builder.start();
+				System.out.println("Process result: "+ process_result);
 				
 								
 			} catch (Exception e2) {
@@ -163,47 +145,7 @@ public class GetGRNGraph extends AbstractCyAction {
 		if(System.getProperty("os.name").toLowerCase().startsWith("windows")) {
 			System.out.println("Proximamente");
 		}else if(System.getProperty("os.name").toLowerCase().startsWith("linux")) {
-//			System.out.println(dest);
 		}
-		
-		
-	
-//		System.out.println(System.getProperty("user.dir"));
-//		Funciona
-		
-		/*if (cyApplicationManager.getCurrentNetwork() == null){			
-			JOptionPane.showMessageDialog(null, "Not network selected ");
-			return;
-		}
-
-		//Get the selected nodes
-		List<CyNode> nodes = CyTableUtil.getNodesInState(cyApplicationManager.getCurrentNetwork(),"selected",true);
-
-		CyNetwork myNet  = cyApplicationManager.getCurrentNetwork();
-		myNet.getRow(myNet).set(CyNetwork.NAME, networkNaming.getSuggestedNetworkTitle("Example"));
-		CyNode node1 = myNet.addNode();
-		CyNode node2 = myNet.addNode();
-		
-		myNet.getRow(node1).set(CyNetwork.NAME, "Node11");
-		myNet.getRow(node2).set(CyNetwork.NAME, "Node12");
-		
-		myNet.addEdge(node1, node2, true);
-		
-		networkManager.addNetwork(myNet);
-		
-		JOptionPane.showMessageDialog(null, "Number of selected nodes are "+nodes.size());*/
-		
-		
-//		Funciona
-				
-		
-		
-        
-		
-		
-		
-		
-		
 		
 	}
 }

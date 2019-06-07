@@ -18,7 +18,7 @@
 			<attribute name="maven.pomderived" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.7">
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.6">
 		<attributes>
 			<attribute name="maven.pomderived" value="true"/>
 		</attributes>
@@ -29,7 +29,7 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/jfreechart"/>
-	<classpathentry kind="lib" path="/home/hector/jfreechart-1.0.19.jar"/>
+	<classpathentry kind="lib" path="/home/hector/eclipse-workspace/GRN_GPU/lib/jfreechart-1.0.19.jar"/>
 	<classpathentry kind="lib" path="/home/hector/.m2/repository/org/cytoscape/core-task-api/3.0.0/core-task-api-3.0.0.jar" sourcepath="/home/hector/.m2/repository/org/cytoscape/core-task-api/3.0.0/core-task-api-3.0.0-sources.jar">
 		<attributes>
 			<attribute name="maven.pomderived" value="true"/>
