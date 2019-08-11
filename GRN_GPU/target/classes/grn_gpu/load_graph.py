@@ -103,9 +103,12 @@ if __name__ == '__main__':
 		# Cleaning exit data
 
 		if int(sys.argv[2]) == 3:
-			print("Abrendo saida.txt")
-			if os.path.exists("../saida.txt"):
-				lines = open("../saida.txt").readlines()
+			print("Abrendo "+sys.argv[1])
+			print(os.path.abspath(sys.argv[1]))
+			# print(os.path.exists(sys.argv[1]))
+			if os.path.exists(sys.argv[1]):
+				lines = open(sys.argv[1]).readlines()
+				# print(lines)
 				if len(lines) == 0:
 					command = "saida.txt"
 					print(command)
@@ -129,7 +132,7 @@ if __name__ == '__main__':
 				posdel =list(set(posdel))
 				for e in posdel[::-1]:
 					lines.pop(e)
-				save = open("../saida.txt","w")
+				save = open(sys.argv[1],"w")
 				save.writelines(lines)
 
 			# End cleaning data
