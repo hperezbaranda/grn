@@ -18,6 +18,7 @@ import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.task.NetworkTaskFactory;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
+import org.cytoscape.view.vizmap.VisualStyleFactory;
 import org.cytoscape.work.TaskFactory;
 import org.osgi.framework.BundleContext;
 
@@ -41,13 +42,14 @@ public class CyActivator extends AbstractCyActivator {
 //		CyNetworkFactory networkFactory = getService(bc, CyNetworkFactory.class);
 		
 		
+		
 		CloneNetworkTaskFactory mutation= new CloneNetworkTaskFactory(networkManager, cyNetworkFactoryServiceRef,cyNetworkNamingServiceRef,cyApplicationManager,cyNetworkTableManager,rootNetwokMng);
 		Properties cloneprops = new Properties();
 		cloneprops.setProperty("preferredMenu","Apps.TLF");
 		cloneprops.setProperty("title","Clone Network");
 		registerService(bc,mutation,NetworkTaskFactory.class,cloneprops);
 		
-		SimTaskFactory simulation= new SimTaskFactory(cyNetworkFactoryServiceRef, networkManager, cyNetworkNamingServiceRef);
+		SimTaskFactory simulation= new SimTaskFactory(cyNetworkFactoryServiceRef, networkManager, cyNetworkNamingServiceRef,cyNetworkViewManager,cyNetworkViewFactory);
 		Properties simprop = new Properties();
 		simprop.setProperty("preferredMenu","Apps.TLF");
 		simprop.setProperty("title","Run Simulation");
@@ -59,12 +61,12 @@ public class CyActivator extends AbstractCyActivator {
 		characteristicsprops.setProperty("title","Show Result");
 		registerService(bc,characteristics,NetworkTaskFactory.class,characteristicsprops);
 		
-		GetGRNGraph getGRNGraph = new GetGRNGraph(networkManager);
+		GetGRNGraphAction getGRNGraph = new GetGRNGraphAction(networkManager);
 		registerService(bc,getGRNGraph,CyAction.class,new Properties());
 				
-		MyListener nodelistener = new MyListener();
-		Properties p = new Properties();
-		registerService(bc, nodelistener, RowsSetListener.class, p);
+//		MyListener nodelistener = new MyListener();
+//		Properties p = new Properties();
+//		registerService(bc, nodelistener, RowsSetListener.class, p);
 		
 		PagerankNetworkTaskFactory pagerank = new PagerankNetworkTaskFactory();
 		Properties properties = new Properties();

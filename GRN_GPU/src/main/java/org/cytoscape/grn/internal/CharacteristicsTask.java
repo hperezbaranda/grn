@@ -47,7 +47,7 @@ import org.jgrapht.alg.interfaces.VertexScoringAlgorithm;
 import org.jgrapht.alg.scoring.PageRank;
 
 
-public class Characteristics extends AbstractTask {
+public class CharacteristicsTask extends AbstractTask {
 
 	/**
 	 * 
@@ -58,7 +58,7 @@ public class Characteristics extends AbstractTask {
 	private CyNetworkNaming networkNaming;
 	private CyNetwork network;
 
-	public Characteristics(CyNetworkFactory cnf, CyNetworkNaming name, CyNetwork network) {
+	public CharacteristicsTask(CyNetworkFactory cnf, CyNetworkNaming name, CyNetwork network) {
 		this.networkFactory = cnf;
 		this.networkNaming = name;
 		this.network = network;
@@ -338,7 +338,7 @@ public class Characteristics extends AbstractTask {
 			}
 			CyRootNetwork rootNet =attNet.getRootNetwork();
 					
-			String name ="saida.txt";
+			String name ="saida_"+ attNet.getRow(attNet).get(CyNetwork.NAME, String.class).split("_")[1] +".txt";
 			System.out.println(attNet.getRow(attNet).get(CyNetwork.NAME, String.class).split("_").length > 1);
 			System.out.println(rootNet.getRow(rootNet).get(CyNetwork.NAME, String.class));
 			if(rootNet.getRow(rootNet).get(CyNetwork.NAME, String.class).indexOf("Mutations") != -1 && attNet.getRow(attNet).get(CyNetwork.NAME, String.class).split("_").length > 1) {

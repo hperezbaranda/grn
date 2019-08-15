@@ -1,5 +1,6 @@
 package org.cytoscape.grn.internal;
 
+import java.awt.Color;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -8,6 +9,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -15,14 +17,25 @@ import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JOptionPane;
 import javax.swing.SwingWorker;
+
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
+import org.cytoscape.model.CyTableUtil;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.session.CyNetworkNaming;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.CyNetworkViewFactory;
+import org.cytoscape.view.model.CyNetworkViewManager;
+import org.cytoscape.view.model.VisualProperty;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
+import org.cytoscape.view.presentation.property.values.VisualPropertyValue;
+import org.cytoscape.view.vizmap.VisualPropertyDependency;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
@@ -43,21 +56,27 @@ public class SimulationTask extends AbstractTask {
 	private CyNetworkFactory networkFactory;
 	private CyNetworkManager networkManager;
 	private CyNetworkNaming networkNaming;
-	private Characteristics showgraph;
+	private CharacteristicsTask showgraph;
+	private CyNetworkViewManager networkViewManager;
+	private CyNetworkViewFactory networkViewFactory;
 	private long USID;
 	CySubNetwork myNet = null;
 	int cont;
 	
+	
 	public SimulationTask(CyNetworkFactory cnf,CyNetworkManager networkManager, 
-			CyNetworkNaming name, CyNetwork network){
+			CyNetworkNaming name, CyNetwork network, CyNetworkViewManager networkViewManager,CyNetworkViewFactory networkViewFactory){
 		
 		this.networkFactory = cnf;
 		this.networkManager = networkManager;
 		this.networkNaming = name;
-		this.showgraph = new Characteristics(cnf ,name,null);
+		this.showgraph = new CharacteristicsTask(cnf ,name,null);
 		this.USID = 0;
 		this.cont = 0;
 		this.myNet = (CySubNetwork) network;
+		this.networkViewFactory = networkViewFactory;
+		this.networkViewManager = networkViewManager;
+		
 	}
 	
 	public long GetUSIDnetwork() {
@@ -101,25 +120,34 @@ public class SimulationTask extends AbstractTask {
 		}
 	}
 	
-	public String ProcessThresholdLine(String id, String[] line,List<String> list) {
+	public String ProcessThresholdLine(String id, String tline,List<String> list) throws Exception {
 		String s = id+",";
 		String eq = "";
-		
-		for(String i : line) {
-//			System.out.println(i);
-			if(isNum(i) ) {
-				eq+=i+" ";
-			}else {
-				try {
-//					System.out.println(list.indexOf(i));
-					if(list.indexOf(i) != -1) {
-						eq+=list.indexOf(i)+" ";
+		System.out.println("ID node source "+id);
+//		System.out.print(tline == null);
+		if(tline != null) {
+			String[] line = tline.split(" "); 
+			for(String i : line) {
+				System.out.println("Linea "+i);
+				if(isNum(i) ) {
+					eq+=i+" ";
+				}else {
+					try {
+						System.out.println(list.indexOf(i));
+						if(list.indexOf(i) != -1) {
+							eq+=list.indexOf(i)+" ";
+						}
+					}catch (Exception e) {
+//						throw new Exception("Error processing graph "+e.getMessage());
+						continue;
 					}
-				}catch (Exception e) {
-					continue;
 				}
 			}
+		}else {
+			System.out.println("aqui no eq");
+			eq+='0'+" "+'1'; 
 		}
+		
 		return s+eq;
 	}
 	
@@ -161,13 +189,13 @@ public class SimulationTask extends AbstractTask {
 	    return ret;
 	}
 
+	
 	boolean done =false;
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
-		System.out.print(chooser.getSelectedValue());
 		taskMonitor.setTitle("Processing");
 		
-		try {
+//		try {
 
 			CyRootNetwork rootNet =myNet.getRootNetwork();
 			
@@ -183,16 +211,23 @@ public class SimulationTask extends AbstractTask {
             List<String>listNodes = t.getColumn("id").getValues(String.class);
             Collections.sort(listNodes);
             
+//            System.out.println("VACIO "+t.getAllRows().get(14).get("eq. TLF", String.class));
+            
             String equations[] = new String[t.getAllRows().size()]; 
             for (int i = 0; i < t.getAllRows().size(); i++) {
             	String id = t.getAllRows().get(i).get("name", String.class);
-            	String linenew = this.ProcessThresholdLine(id,t.getAllRows().get(i).get("eq. TLF", String.class).split(" "), listNodes);
+            	String eqline = t.getAllRows().get(i).get("eq. TLF", String.class);
+            	String linenew="";
+            	
+            	linenew = this.ProcessThresholdLine(id,eqline, listNodes);
+            	
+            	
             	int index = listNodes.indexOf(linenew.split(",")[0]);
             	equations[index]=linenew.split(",")[1];
 			}
             
             taskMonitor.setProgress(0.25);
-            taskMonitor.setStatusMessage("Taking any change...");
+            taskMonitor.setStatusMessage("Taking any modification...");
 
             String dir1 = System.getProperty("user.dir");
 			File f11 = new File(dir1+"/grn_gpu/pesosTabela.txt");
@@ -285,15 +320,21 @@ public class SimulationTask extends AbstractTask {
 
 				int process_result1 = process.waitFor();
 				
-				System.out.println(process_result1);
+				System.out.println("Result de simulacio: "+process_result1);
 				if(process_result1 !=0) {
 //					JOptionPane.showMessageDialog(null, "Error reading the graph\n"+error, "Error",JOptionPane.ERROR_MESSAGE);
 					throw new Exception("Error reading the graph "+error);
-				}else {
-					System.out.println("Process result de todo: "+ process_result1);
+				}else {					
 					
 					dir = System.getProperty("user.dir");
-					ProcessBuilder builder2 = new ProcessBuilder(dir+"/grn_gpu/venv/bin/python3",  dir+"/grn_gpu/load_graph.py","limpeza","3");
+					String filename = "saida_S"+rnSim+".txt"; 
+					if(mutations) {
+//								this.CopyFile(dir+"/grn_gpu/saida.txt",dir+"/grn_gpu/mutations_"+clonenumber+".txt");
+						filename = "mutations_"+clonenumber+"_S"+rnSim+".txt";
+					}
+					
+					dir = System.getProperty("user.dir");
+					ProcessBuilder builder2 = new ProcessBuilder(dir+"/grn_gpu/venv/bin/python3",  dir+"/grn_gpu/load_graph.py",dir+"/grn_gpu/"+filename,"3");
 		            final Process process2 = builder2.start();
 //					JOptionPane pane2 = new JOptionPane("Processing to thresholding graph...");
 //					final JDialog dialog2 = pane2.createDialog(null, "Processing");
@@ -329,13 +370,7 @@ public class SimulationTask extends AbstractTask {
 					};
 					worker2.execute();
 //					dialog2.setVisible(true);
-					
-					dir = System.getProperty("user.dir");
-					String filename = "saida_S"+rnSim+".txt"; 
-					if(mutations) {
-//								this.CopyFile(dir+"/grn_gpu/saida.txt",dir+"/grn_gpu/mutations_"+clonenumber+".txt");
-						filename = "mutations_"+clonenumber+"_S"+rnSim+".txt";
-					}
+					int process_result2 = process2.waitFor();
 					
 					taskMonitor.setProgress(1);
 					taskMonitor.setStatusMessage("Processing graphics...");
@@ -407,15 +442,44 @@ public class SimulationTask extends AbstractTask {
 							attnetwork.addEdge(attnetwork.getNode(first.getSUID()), attnetwork.getNode(first.getSUID()), true);
 						}			
 					}
-			        attnetwork.getRow(attnetwork).set("name",networkNaming.getSuggestedNetworkTitle("Atractors"+chooser.getSelectedValue()+"_S"+rnSim+"-"+clonenumber) );
+			        if(clonenumber == "")
+			        	attnetwork.getRow(attnetwork).set("name",networkNaming.getSuggestedNetworkTitle("Atractors"+chooser.getSelectedValue()+"_S"+rnSim) );
+			        else
+			        	attnetwork.getRow(attnetwork).set("name",networkNaming.getSuggestedNetworkTitle("Atractors"+chooser.getSelectedValue()+"_S"+rnSim+"-"+clonenumber) );
 					networkManager.addNetwork(attnetwork);
+					System.out.println("ID NET: "+attnetwork.getSUID());
+					
+					// ----------------------Testing create de view--------------------------------					
+					
+					final Collection<CyNetworkView> views = networkViewManager.getNetworkViews(myNet);
+					CyNetworkView myView = null;
+					
+					if(views.size() != 0)
+						myView = views.iterator().next();
+//					System.out.println(myView.toString());
+					if (myView == null) {
+						// create a new view for my network
+						myView = networkViewFactory.createNetworkView(attnetwork);
+						myView.setVisualProperty(BasicVisualLexicon.NETWORK_BACKGROUND_PAINT, Color.BLUE );
+						networkViewManager.addNetworkView(myView);
+					} else {
+						System.out.println("networkView already existed.");
+						
+					}
+
+					// Set the variable destroyView to true, the following snippet of code
+					// will destroy a view
+					boolean destroyView = false;
+					if (destroyView) {
+						networkViewManager.destroyNetworkView(myView);
+					}
 				}
 			}
-		}
-		catch (Exception e1) {
-			e1.printStackTrace();
-			JOptionPane.showMessageDialog(null, "Erro na leitura e interpretação do grafo\n"+ e1.getMessage(), "Erro",JOptionPane.ERROR_MESSAGE);
-		}
+		
+//		catch (Exception e1) {
+//			e1.printStackTrace();
+//			JOptionPane.showMessageDialog(null, "Erro na leitura e interpretação do grafo\n"+ e1.getMessage(), "Erro",JOptionPane.ERROR_MESSAGE);
+//		}
 		
 	}
 

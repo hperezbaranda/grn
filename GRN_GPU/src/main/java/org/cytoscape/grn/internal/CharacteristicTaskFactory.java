@@ -21,7 +21,7 @@ public class CharacteristicTaskFactory implements NetworkTaskFactory{
 	@Override
 	public TaskIterator createTaskIterator(CyNetwork network) {
 		// TODO Auto-generated method stub
-		return new TaskIterator(new Characteristics(cyNetworkFactory, cyNetworkNaming,network));
+		return new TaskIterator(new CharacteristicsTask(cyNetworkFactory, cyNetworkNaming,network));
 	}
 
 	@Override
