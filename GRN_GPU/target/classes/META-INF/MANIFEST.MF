@@ -2,20 +2,21 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Created-By: Apache Maven Bundle Plugin
 Tool: Bnd-1.15.0
-Bnd-LastModified: 1565493442745
+Bnd-LastModified: 1568214365876
 Import-Package: javax.swing,org.cytoscape.application;version="[3.0,4)",
  org.cytoscape.application.swing;version="[3.0,4)",org.cytoscape.model;v
- ersion="[3.0,4)",org.cytoscape.model.subnetwork;version="[3.0,4)",org.c
- ytoscape.service.util;version="[3.0,4)",org.cytoscape.session;version="
- [3.0,4)",org.cytoscape.task,org.cytoscape.view.model;version="[3.0,4)",
- org.cytoscape.view.presentation.property;version="[3.0,4)",org.cytoscap
- e.work;version="[3.0,4)",org.cytoscape.work.util;version="[3.0,4)",org.
- jfree.chart,org.jfree.chart.axis,org.jfree.chart.labels,org.jfree.chart
- .plot,org.jfree.chart.renderer.category,org.jfree.data.category,org.osg
- i.framework;version="[1.5,2)"
-Bundle-Name: GRNTLF App
+ ersion="[3.0,4)",org.cytoscape.model.events;version="[3.0,4)",org.cytos
+ cape.model.subnetwork;version="[3.0,4)",org.cytoscape.service.util;vers
+ ion="[3.0,4)",org.cytoscape.session;version="[3.0,4)",org.cytoscape.tas
+ k,org.cytoscape.view.model;version="[3.0,4)",org.cytoscape.view.present
+ ation.property;version="[3.0,4)",org.cytoscape.work;version="[3.0,4)",o
+ rg.cytoscape.work.util;version="[3.0,4)",org.jfree.chart,org.jfree.char
+ t.axis,org.jfree.chart.labels,org.jfree.chart.plot,org.jfree.chart.rend
+ erer.category,org.jfree.data.category,org.osgi.framework;version="[1.5,
+ 2)"
+Bundle-Name: GRN App
 Bundle-Activator: org.cytoscape.grn.internal.CyActivator
-Bundle-SymbolicName: org.cytoscape.CyTLFGraph
+Bundle-SymbolicName: org.cytoscape.GRN_GPU
 Bundle-Version: 1.0
 Built-By: hector
 Build-Jdk: 11.0.4

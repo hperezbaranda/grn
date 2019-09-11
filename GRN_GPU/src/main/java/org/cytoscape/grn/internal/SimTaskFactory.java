@@ -18,7 +18,6 @@ public class SimTaskFactory implements NetworkTaskFactory {
 	private CyNetworkFactory cyNetworkFactory;
 	private CyNetworkManager cyNetworkManager;
 	private CyNetworkNaming cyNetworkNaming;
-	private CyRootNetworkManager cyRootNetworkManager;
 	private CyNetworkViewManager networkViewManager;
 	private CyNetworkViewFactory networkViewFactory;
 	

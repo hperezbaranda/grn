@@ -61,7 +61,7 @@ public class CyActivator extends AbstractCyActivator {
 		characteristicsprops.setProperty("title","Show Result");
 		registerService(bc,characteristics,NetworkTaskFactory.class,characteristicsprops);
 		
-		GetGRNGraphAction getGRNGraph = new GetGRNGraphAction(networkManager);
+		GRNGraphAction getGRNGraph = new GRNGraphAction(networkManager);
 		registerService(bc,getGRNGraph,CyAction.class,new Properties());
 				
 //		MyListener nodelistener = new MyListener();

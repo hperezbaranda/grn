@@ -51,7 +51,7 @@ import org.jfree.chart.renderer.category.StackedBarRenderer;
 import org.jfree.data.category.DefaultCategoryDataset;
 
 
-public class GetGRNGraphAction extends AbstractCyAction {
+public class GRNGraphAction extends AbstractCyAction {
 
 	private static final long serialVersionUID = 1L;
 	private JFileChooser fc;
@@ -59,7 +59,7 @@ public class GetGRNGraphAction extends AbstractCyAction {
 	private CyNetworkManager networkManager;
 	private String error = "";
 
-	public GetGRNGraphAction(CyNetworkManager networkManager){
+	public GRNGraphAction(CyNetworkManager networkManager){
 		super("Load Boolean Graph");
 		this.networkManager = networkManager;
 		setPreferredMenu("Apps.TLF");
