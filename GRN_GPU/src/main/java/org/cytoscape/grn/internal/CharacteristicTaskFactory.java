@@ -1,11 +1,9 @@
 package org.cytoscape.grn.internal;
 
-import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.task.NetworkTaskFactory;
-import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskIterator;
 
 public class CharacteristicTaskFactory implements NetworkTaskFactory{

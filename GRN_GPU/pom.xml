@@ -77,6 +77,11 @@
 					</instructions>
 				</configuration>
 			</plugin>
+			<plugin>
+				<groupId>org.cytoscape</groupId>
+				<artifactId>core-task-api</artifactId>
+				<version>3.0.0</version>
+			</plugin>
 		</plugins>
 	</build>
 
@@ -101,8 +106,6 @@
 			<artifactId>org.osgi.core</artifactId>
 			<version>${osgi.api.version}</version>
 		</dependency>
-
-
 		<dependency>
 			<groupId>org.jgrapht</groupId>
 			<artifactId>jgrapht-core</artifactId>

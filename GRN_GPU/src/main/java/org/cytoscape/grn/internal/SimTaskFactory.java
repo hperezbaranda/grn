@@ -1,12 +1,8 @@
 package org.cytoscape.grn.internal;
 
-import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.model.events.NetworkAddedEvent;
-import org.cytoscape.model.events.NetworkAddedListener;
-import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.task.NetworkTaskFactory;
 import org.cytoscape.view.model.CyNetworkViewFactory;
