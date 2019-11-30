@@ -71,14 +71,14 @@ public class PagerankTask extends AbstractTask {
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
 		// TODO Auto-generated method stub
-		CyTable t = network.getDefaultNodeTable();
-		List<Integer> countEdge= t.getColumn("indegree").getValues(Integer.class);
-		int sum =0;
-		for (int v : countEdge) {
-			sum+=v;
-		}
-		System.out.println(sum/2);
-	/*	nodeIndicies = new IdentityHashMap<CyNode, Integer>();
+//		CyTable t = network.getDefaultNodeTable();
+//		List<Integer> countEdge= t.getColumn("indegree").getValues(Integer.class);
+//		int sum =0;
+//		for (int v : countEdge) {
+//			sum+=v;
+//		}
+//		System.out.println(sum/2);
+		nodeIndicies = new IdentityHashMap<CyNode, Integer>();
 		nodeIndiciesMap = new IdentityHashMap<Integer, CyNode>();
 		int nodeIndex = 0;
 		for (CyNode node : network.getNodeList()) {
@@ -118,7 +118,7 @@ public class PagerankTask extends AbstractTask {
 //			
 //			System.out.println(i+"---"+pageranks[i++]);
 //		}
-*/
+
 	}
 
 	public double[] calculatePagerank() {

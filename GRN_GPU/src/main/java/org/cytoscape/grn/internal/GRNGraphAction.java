@@ -78,9 +78,9 @@ public class GRNGraphAction extends AbstractCyAction {
 
 		if(value == JFileChooser.APPROVE_OPTION) {
 
-			System.out.println("open_file: "+fc.getSelectedFile());
-			String arch = this.getClass().getResource("/grn_gpu/makefile").toString();
-			System.out.println(arch);
+//			System.out.println("open_file: "+fc.getSelectedFile());
+//			String arch = this.getClass().getResource("/grn_gpu/makefile").toString();
+//			System.out.println(arch);
 
 			//--------------CODE WORKING (OPEN FILE AND COPY)----------------------------
 			
