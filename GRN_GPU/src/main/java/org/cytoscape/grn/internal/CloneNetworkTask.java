@@ -26,10 +26,10 @@ import org.cytoscape.work.Tunable;
 
 public class CloneNetworkTask extends AbstractTask {
 	
-	@Tunable(description="Numbers of simulation")
-	
-	
-	public int num;
+//	@Tunable(description="Numbers of simulation")
+//	
+//	
+//	public int num;
 	
 	private Map<CyNode, CyNode> orig2NewNodeMap;
 	private Map<CyNode, CyNode> new2OrigNodeMap;

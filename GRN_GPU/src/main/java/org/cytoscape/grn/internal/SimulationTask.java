@@ -120,7 +120,7 @@ public class SimulationTask extends AbstractTask {
 		}
 	}
 	
-	public String ProcessThresholdLine(String id, String tline,List<String> list) throws Exception {
+	public String ProcessThresholdLine(String id, String tline,List<String> list, int value) throws Exception {
 		String s = id+",";
 		String eq = "";
 		System.out.println("ID node source "+id);
@@ -138,14 +138,17 @@ public class SimulationTask extends AbstractTask {
 							eq+=list.indexOf(i)+" ";
 						}
 					}catch (Exception e) {
-//						throw new Exception("Error processing graph "+e.getMessage());
-						continue;
+						throw new Exception("Error processing graph "+e.getMessage());
+//						continue;
 					}
 				}
 			}
 		}else {
 			System.out.println("aqui no eq");
-			eq+='0'+" "+'1'; 
+			if(value == 0)
+				eq+='0'+" "+'1'; 
+			else
+				eq+='1'+" "+'0';
 		}
 		
 		return s+eq;
@@ -215,11 +218,17 @@ public class SimulationTask extends AbstractTask {
             
             String equations[] = new String[t.getAllRows().size()]; 
             for (int i = 0; i < t.getAllRows().size(); i++) {
+            	int node_value = 0;
             	String id = t.getAllRows().get(i).get("name", String.class);
+            	boolean fixed = t.getAllRows().get(i).get("fixed", Boolean.class);
             	String eqline = t.getAllRows().get(i).get("eq. TLF", String.class);
+            	if(fixed) {
+            		eqline = null;
+            		node_value = Integer.parseInt(t.getAllRows().get(i).get("value", String.class));
+            	}
             	String linenew="";
             	
-            	linenew = this.ProcessThresholdLine(id,eqline, listNodes);
+            	linenew = this.ProcessThresholdLine(id,eqline, listNodes,node_value);
             	
             	
             	int index = listNodes.indexOf(linenew.split(",")[0]);
@@ -252,7 +261,7 @@ public class SimulationTask extends AbstractTask {
 			dir = System.getProperty("user.dir")+"/grn_gpu/makefile";
 			ModifyText(dir,"tecnologia = " ,"tecnologia = "+chooser.getSelectedValue());	
 			if(mutations) {
-				ModifyText(dir, "saida = ", "saida = mutations_"+clonenumber+"_S"+rnSim+".txt");
+				ModifyText(dir, "saida = ", "saida = mutations_S"+rnSim+"-"+clonenumber+".txt");
 			}
 			else
 			{
@@ -330,7 +339,7 @@ public class SimulationTask extends AbstractTask {
 					String filename = "saida_S"+rnSim+".txt"; 
 					if(mutations) {
 //								this.CopyFile(dir+"/grn_gpu/saida.txt",dir+"/grn_gpu/mutations_"+clonenumber+".txt");
-						filename = "mutations_"+clonenumber+"_S"+rnSim+".txt";
+						filename = "mutations_S"+rnSim+"-"+clonenumber+".txt";
 					}
 					
 					dir = System.getProperty("user.dir");

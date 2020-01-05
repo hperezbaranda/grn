@@ -81,9 +81,9 @@ public class GRNGraphAction extends AbstractCyAction {
 //			System.out.println("open_file: "+fc.getSelectedFile());
 //			String arch = this.getClass().getResource("/grn_gpu/makefile").toString();
 //			System.out.println(arch);
-
-			//--------------CODE WORKING (OPEN FILE AND COPY)----------------------------
-			
+//
+//			//--------------CODE WORKING (OPEN FILE AND COPY)----------------------------
+//			
 //			String line;
 //			try {
 //				InputStreamReader inputStream = new InputStreamReader(getClass().getResourceAsStream("/grn_gpu/makefile"),"UTF-8");
@@ -97,9 +97,9 @@ public class GRNGraphAction extends AbstractCyAction {
 //				out.flush();
 //				out.close();
 //				reader.close();
-
+//
 //			} catch (Exception e1) {
-				// TODO Auto-generated catch block
+////				 TODO Auto-generated catch block
 //				e1.printStackTrace();
 //			}
 

@@ -331,7 +331,7 @@ public class CharacteristicsTask extends AbstractTask {
 
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
-//		try {
+		try {
 			CySubNetwork attNet = (CySubNetwork) this.network;
 			if(attNet ==  null) {
 				throw new Exception("There is not an atractor graph!");
@@ -341,16 +341,17 @@ public class CharacteristicsTask extends AbstractTask {
 			String name ="saida_"+ attNet.getRow(attNet).get(CyNetwork.NAME, String.class).split("_")[1] +".txt";
 			System.out.println(attNet.getRow(attNet).get(CyNetwork.NAME, String.class).split("_").length > 1);
 			System.out.println(rootNet.getRow(rootNet).get(CyNetwork.NAME, String.class));
-			if(rootNet.getRow(rootNet).get(CyNetwork.NAME, String.class).indexOf("Mutations") != -1 && attNet.getRow(attNet).get(CyNetwork.NAME, String.class).split("_").length > 1) {
+			if(rootNet.getRow(rootNet).get(CyNetwork.NAME, String.class).indexOf("Atractors") != -1 && attNet.getRow(attNet).get(CyNetwork.NAME, String.class).split("-").length > 1) {
 				name = "mutations_"+attNet.getRow(attNet).get(CyNetwork.NAME, String.class).split("_")[1]+".txt";
 			}
 			System.out.println(name);
 			BaciaForAtractor(name);
 			AtractorForSize(name);
 //			HammingAtractors(name);
-//		}catch (Exception err) {
+		}catch (Exception err) {
+			throw new Exception("Error reading and simulated graph\n"+err.getMessage());
 //			JOptionPane.showMessageDialog(null, "Error reading and simulated graph\n"+err.getMessage(), "Error",JOptionPane.ERROR_MESSAGE);
-//		}
+		}
 		
 	}
 
