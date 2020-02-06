@@ -115,7 +115,7 @@ public class CharacteristicsTask extends AbstractTask {
 			
 			renderer1 = new BarRenderer();
 			
-			DecimalFormat labelFormatter = new DecimalFormat("#");
+			DecimalFormat labelFormatter = new DecimalFormat("#.#");
 			
 	        renderer1.setBaseItemLabelGenerator(new StandardCategoryItemLabelGenerator("{2}%", labelFormatter));
 	//        renderer1.setBaseToolTipGenerator(new StandardCategoryToolTipGenerator("{2}", new DecimalFormat("########")));
@@ -124,7 +124,7 @@ public class CharacteristicsTask extends AbstractTask {
 			plot1 = new CategoryPlot(dataset1, categoryAxis, valueAxis, renderer1);
 			plot1.setOrientation(PlotOrientation.VERTICAL);
 			
-			JFreeChart chart1 = new JFreeChart("Atratores e seus Basians", JFreeChart.DEFAULT_TITLE_FONT, plot1, true);
+			JFreeChart chart1 = new JFreeChart("Attractor Basins", JFreeChart.DEFAULT_TITLE_FONT, plot1, true);
 			// Mostrar Grafico
 	        Chart(lines.get(0),chart1);
 		}
@@ -197,7 +197,7 @@ public class CharacteristicsTask extends AbstractTask {
 				plot1 = new CategoryPlot(dataset1, categoryAxis, valueAxis, renderer1);
 				plot1.setOrientation(PlotOrientation.VERTICAL);
 				
-				JFreeChart chart1 = new JFreeChart("Quantidade de Atratores por tamanho", JFreeChart.DEFAULT_TITLE_FONT, plot1, true);
+				JFreeChart chart1 = new JFreeChart("Attractor's size", JFreeChart.DEFAULT_TITLE_FONT, plot1, true);
 				chart1.removeLegend();
 				
 				// Mostrar Grafico
@@ -225,7 +225,7 @@ public class CharacteristicsTask extends AbstractTask {
 		return distance;
 	}
 	
-	public Long CalculateHmmingAtractor(ArrayList<String> att1, ArrayList<String> att2) {
+	public Long CalculateHammingAtractor(ArrayList<String> att1, ArrayList<String> att2) {
 		
 		ArrayList<Long> dist = new ArrayList<Long>();
 		for (int i = 0; i < att1.size(); i++) {
@@ -286,7 +286,7 @@ public class CharacteristicsTask extends AbstractTask {
 			for (int i = 0; i < atractors.size()-1; i++) {
 				System.out.println("Atract #"+(i+1));
 				for (int j = i+1; j < atractors.size(); j++) {
-					System.out.println(CalculateHmmingAtractor(atractors.get(i), atractors.get(j)));
+					System.out.println(CalculateHammingAtractor(atractors.get(i), atractors.get(j)));
 				}
 			}
 //			System.out.print("Distancia de Hamming "+CalculateHmmingAtractor(a1,a2));
@@ -338,16 +338,16 @@ public class CharacteristicsTask extends AbstractTask {
 			}
 			CyRootNetwork rootNet =attNet.getRootNetwork();
 					
-			String name ="saida_"+ attNet.getRow(attNet).get(CyNetwork.NAME, String.class).split("_")[1] +".txt";
+			String name ="saida_"+ attNet.getRow(attNet).get(CyNetwork.NAME, String.class).split("_")[1]+"_"+attNet.getRow(attNet).get(CyNetwork.NAME, String.class).split("_")[2] +".txt";
 			System.out.println(attNet.getRow(attNet).get(CyNetwork.NAME, String.class).split("_").length > 1);
 			System.out.println(rootNet.getRow(rootNet).get(CyNetwork.NAME, String.class));
 			if(rootNet.getRow(rootNet).get(CyNetwork.NAME, String.class).indexOf("Atractors") != -1 && attNet.getRow(attNet).get(CyNetwork.NAME, String.class).split("-").length > 1) {
-				name = "mutations_"+attNet.getRow(attNet).get(CyNetwork.NAME, String.class).split("_")[1]+".txt";
+				name = "mutations_"+attNet.getRow(attNet).get(CyNetwork.NAME, String.class).split("_")[1]+"_"+attNet.getRow(attNet).get(CyNetwork.NAME, String.class).split("_")[1]+".txt";
 			}
 			System.out.println(name);
 			BaciaForAtractor(name);
 			AtractorForSize(name);
-//			HammingAtractors(name);
+			HammingAtractors(name);
 		}catch (Exception err) {
 			throw new Exception("Error reading and simulated graph\n"+err.getMessage());
 //			JOptionPane.showMessageDialog(null, "Error reading and simulated graph\n"+err.getMessage(), "Error",JOptionPane.ERROR_MESSAGE);

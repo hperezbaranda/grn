@@ -2,7 +2,7 @@
 #include <math.h>
 #include <omp.h>
 #include <map>
-#include <string>
+#include <string.h>
 #include <stdlib.h>
 #include <sstream>
 #include <fstream>
@@ -14,6 +14,7 @@
 using namespace std;
 typedef map <string,map <int,int> > Tabela;
 Tabela atractor;
+int type =0;
 
 void pass(unsigned long long &state);
 bool equals(bool *vet1, bool *vet2, int size);
@@ -21,7 +22,7 @@ void initialState(unsigned long int valor, bool *vet1, bool *vet2, int size);
 // int binarice(bool *vect);
 // string boolArraytoString(bool *vet, int size);
 // unsigned long long int boolArraytoInt(bool *vet, int size);
-void runGNR (int inicio, int fim);
+void runGNR (int inicio, int fim, int type);
 
 int *eqSizeCPU, *threshold, *equations;
 int nEq;
@@ -41,17 +42,36 @@ int main(int argc, char **argv) {
     eqSizeCPU = (int *)malloc(bytes);
     threshold = (int *)malloc(bytes);
 
-    unsigned long int estadosIniciais;
-    // estadosIniciais = (unsigned long int) pow(2, nEq)-1;
+	unsigned long int init =0;
+    unsigned long int end;
+	
+    // end = (unsigned long int) pow(2, nEq)-1;
     stringstream numsimulation;
     numsimulation << argv[2];
-    numsimulation >> estadosIniciais;
-    //cout << "estados iniciais: "<<estadosIniciais << endl;
+
+    if(argc==4)
+    {
+		type = 0;
+		stringstream begin;
+		begin << argv[3];
+		begin >> init;
+
+		unsigned long int value;
+		numsimulation >> value;
+		end = init + value;
+    }
+    else
+	{
+		type = 1;
+    	numsimulation >> end;
+	}
+    
+    // cout << "estados busca: "<<init << "-----"<< end << endl;
     unsigned int period = 0;
     unsigned int transient = 0;
     omp_set_num_threads(NUMTHREADS);
-    unsigned long int inicio=0;
-    // unsigned long int dadosporThread = (estadosIniciais/NUMTHREADS)-1;
+    //unsigned long int inicio=0;
+    // unsigned long int dadosporThread = (end/NUMTHREADS)-1;
     // unsigned long int fim = dadosporThread;
 
     int count = 0;
@@ -76,8 +96,7 @@ int main(int argc, char **argv) {
         }
         is >> threshold[i];        
     }
-
-    runGNR(0,estadosIniciais);
+    runGNR(init,end,type);
     
     cout << "CPU" << endl;
     for( Tabela::iterator it = atractor.begin(); it != atractor.end(); ++it )
@@ -162,7 +181,7 @@ void pass (unsigned long long &state){
     }   
 }
 
-void runGNR(int inicio, int fim) {
+void runGNR(int inicio, int fim, int type) {
     unsigned long long s0;
     unsigned long long s1;
     unsigned long long int period = 0;
@@ -172,10 +191,14 @@ void runGNR(int inicio, int fim) {
 	tick = omp_get_wtime();
     #pragma omp parallel private(s0,s1,period) // Cada thread tem seu próprio s0 e s1 para executar a sua parte do for
     #pragma omp for schedule(static)
+    
     for (unsigned long long int i = inicio; i < fim; i++) {
-        string at = "";       
-        s0 = s1 = i;
-        //s0=s1 = rand() % fim;
+        string at = ""; 
+        if(type == 0){
+            s0 = s1 = i;
+        }else{
+            s0=s1 = rand() % fim;
+        }    
         
         period = 0;
         do {

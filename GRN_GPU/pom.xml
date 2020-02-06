@@ -14,9 +14,9 @@
 	<groupId>org.cytoscape.app</groupId>
 	<artifactId>grn_gpu</artifactId>
 	<packaging>bundle</packaging>
-	<version>1.0</version>
+	<version>1.1</version>
 	
-	<name>GRN App</name>
+	<name>CyTLF</name>
 
 	<repositories>
 		<repository>

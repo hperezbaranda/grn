@@ -5,16 +5,16 @@ metrics =--metrics all#--metrics shared_load_transactions_per_request --metrics 
 
 simN =10
 input = pesosTabela.txt 
-tecnologia = CPU
+tecnologia = CPUs
 saida = saida_S10.txt
 
 all: $(tecnologia)
 
-GPU:
+GPUs:
 	nvcc -arch=$(arch) $(program).cu -o $(program)
 	./$(program) $(input) $(simN) $(tecnologia) > $(saida)
 
-CPU:
+CPUs:
 	g++ -o multicore-cpu-tlf multicore-cpu-tlf.cpp -fopenmp
 	./$(program_cpu) $(input) $(simN) > $(saida)
 	

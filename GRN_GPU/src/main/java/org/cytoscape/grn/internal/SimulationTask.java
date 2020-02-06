@@ -15,8 +15,12 @@ import java.util.List;
 
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
+import javax.swing.JList;
 import javax.swing.JOptionPane;
+import javax.swing.ListSelectionModel;
 import javax.swing.SwingWorker;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.event.CyEventHelper;
@@ -47,12 +51,25 @@ import org.jfree.chart.JFreeChart;
 
 public class SimulationTask extends AbstractTask {
 	
-	@Tunable(description="Device", groups = {"Simulation"})
- 	public ListSingleSelection chooser = new ListSingleSelection("CPU","GPU");
- 		
-	@Tunable(description="Numbers of simulations", groups = {"Simulation"})
-	public long rnSim = 10;
+	public String sArch[] = {"CPU","GPU"};
 	
+	@Tunable(description="Device", groups = {"Architecture"})
+ 	public ListSingleSelection<String> chooser = new ListSingleSelection<String>(" CPU     "," GPU     ");
+	
+		
+	@Tunable(description="Type Simulation", groups={"Simulation"}, xorChildren=true)
+ 	public ListSingleSelection<String> simType = new ListSingleSelection<String>("Static","Random");
+	
+	@Tunable(description="start", groups={"Simulation","Static"}, xorKey="Static")
+ 	public long start = 0;
+ 	
+ 	@Tunable(description="end", groups={"Simulation","Static"}, xorKey="Static")
+ 	public long end = 9;
+ 
+ 	@Tunable(description="Numbers of simulations", groups={"Simulation","Random"}, xorKey="Random")
+ 	public long rnSim = 10;
+ 
+	   
 	private CyNetworkFactory networkFactory;
 	private CyNetworkManager networkManager;
 	private CyNetworkNaming networkNaming;
@@ -196,6 +213,16 @@ public class SimulationTask extends AbstractTask {
 	boolean done =false;
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
+		String arch = "CPU";
+		if(chooser.getSelectedValue().equals(" GPU     "))
+		{
+			arch = "GPU";
+		}
+		
+		if(simType.getSelectedValue().equals("Static")) {
+			rnSim = (end-start)+1;
+		}
+		
 		taskMonitor.setTitle("Processing");
 		
 //		try {
@@ -259,13 +286,13 @@ public class SimulationTask extends AbstractTask {
             out1.close();
 
 			dir = System.getProperty("user.dir")+"/grn_gpu/makefile";
-			ModifyText(dir,"tecnologia = " ,"tecnologia = "+chooser.getSelectedValue());	
+			ModifyText(dir,"tecnologia = " ,"tecnologia = "+arch+"s");	
 			if(mutations) {
-				ModifyText(dir, "saida = ", "saida = mutations_S"+rnSim+"-"+clonenumber+".txt");
+				ModifyText(dir, "saida = ", "saida = mutations_"+arch+"_S"+rnSim+"-"+clonenumber+".txt");
 			}
 			else
 			{
-				ModifyText(dir, "saida = ", "saida = saida_S"+rnSim+".txt");
+				ModifyText(dir, "saida = ", "saida = saida_"+arch+"_S"+rnSim+".txt");
 			}
 			int numNodes = myNet.getNodeCount();
 			dir = System.getProperty("user.dir")+"/grn_gpu/multicore-tlf-tabela.cu";
@@ -336,10 +363,10 @@ public class SimulationTask extends AbstractTask {
 				}else {					
 					
 					dir = System.getProperty("user.dir");
-					String filename = "saida_S"+rnSim+".txt"; 
+					String filename = "saida_"+arch+"_S"+rnSim+".txt"; 
 					if(mutations) {
 //								this.CopyFile(dir+"/grn_gpu/saida.txt",dir+"/grn_gpu/mutations_"+clonenumber+".txt");
-						filename = "mutations_S"+rnSim+"-"+clonenumber+".txt";
+						filename = "mutations_"+arch+"_S"+rnSim+"-"+clonenumber+".txt";
 					}
 					
 					dir = System.getProperty("user.dir");
@@ -431,7 +458,7 @@ public class SimulationTask extends AbstractTask {
 						long tmpuid =0;
 						CyNode first = attnetwork.addNode();
 						long ats = Long.parseUnsignedLong(tmpline[1]);
-						attnetwork.getRow(first).set("name",Long.toHexString(ats)+"");
+						attnetwork.getRow(first).set("name","(A"+(i+1)+")\n"+Long.toHexString(ats));
 						attnetwork.getRow(first).set("selected", true);
 						if(cant > 1) {
 							for (int j = 0; j < cant-1; j++) {
@@ -449,12 +476,13 @@ public class SimulationTask extends AbstractTask {
 						}
 						else {
 							attnetwork.addEdge(attnetwork.getNode(first.getSUID()), attnetwork.getNode(first.getSUID()), true);
+					
 						}			
 					}
 			        if(clonenumber == "")
-			        	attnetwork.getRow(attnetwork).set("name",networkNaming.getSuggestedNetworkTitle("Atractors"+chooser.getSelectedValue()+"_S"+rnSim) );
+			        	attnetwork.getRow(attnetwork).set("name",networkNaming.getSuggestedNetworkTitle("Atractors_"+arch+"_S"+rnSim) );
 			        else
-			        	attnetwork.getRow(attnetwork).set("name",networkNaming.getSuggestedNetworkTitle("Atractors"+chooser.getSelectedValue()+"_S"+rnSim+"-"+clonenumber) );
+			        	attnetwork.getRow(attnetwork).set("name",networkNaming.getSuggestedNetworkTitle("Atractors_"+arch+"_S"+rnSim+"-"+clonenumber) );
 					networkManager.addNetwork(attnetwork);
 					System.out.println("ID NET: "+attnetwork.getSUID());
 					
