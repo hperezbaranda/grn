@@ -324,7 +324,6 @@ public class CharacteristicsTask extends AbstractTask {
 		}
 		else {
 			throw new Exception("There is not an Attractor Graph");
-//			JOptionPane.showMessageDialog(null, "There's not an Atractor Graph", "Information", JOptionPane.INFORMATION_MESSAGE);
 		}
 			
 	}
@@ -342,7 +341,7 @@ public class CharacteristicsTask extends AbstractTask {
 			System.out.println(attNet.getRow(attNet).get(CyNetwork.NAME, String.class).split("_").length > 1);
 			System.out.println(rootNet.getRow(rootNet).get(CyNetwork.NAME, String.class));
 			if(rootNet.getRow(rootNet).get(CyNetwork.NAME, String.class).indexOf("Atractors") != -1 && attNet.getRow(attNet).get(CyNetwork.NAME, String.class).split("-").length > 1) {
-				name = "mutations_"+attNet.getRow(attNet).get(CyNetwork.NAME, String.class).split("_")[1]+"_"+attNet.getRow(attNet).get(CyNetwork.NAME, String.class).split("_")[1]+".txt";
+				name = "mutations_"+attNet.getRow(attNet).get(CyNetwork.NAME, String.class).split("_")[1]+"_"+attNet.getRow(attNet).get(CyNetwork.NAME, String.class).split("_")[2]+".txt";
 			}
 			System.out.println(name);
 			BaciaForAtractor(name);
@@ -350,7 +349,6 @@ public class CharacteristicsTask extends AbstractTask {
 			HammingAtractors(name);
 		}catch (Exception err) {
 			throw new Exception("Error reading and simulated graph\n"+err.getMessage());
-//			JOptionPane.showMessageDialog(null, "Error reading and simulated graph\n"+err.getMessage(), "Error",JOptionPane.ERROR_MESSAGE);
 		}
 		
 	}

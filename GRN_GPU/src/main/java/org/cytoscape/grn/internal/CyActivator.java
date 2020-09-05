@@ -18,6 +18,8 @@ import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.task.NetworkTaskFactory;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
+import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
+import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyleFactory;
 import org.cytoscape.work.TaskFactory;
 import org.osgi.framework.BundleContext;
@@ -39,9 +41,7 @@ public class CyActivator extends AbstractCyActivator {
 		CyNetworkViewFactory cyNetworkViewFactory = getService(bc, CyNetworkViewFactory.class);
 		CyNetworkTableManager cyNetworkTableManager  = getService(bc,CyNetworkTableManager.class);
 		CyRootNetworkManager rootNetwokMng	= getService(bc,CyRootNetworkManager.class);
-//		CyNetworkFactory networkFactory = getService(bc, CyNetworkFactory.class);
-		
-		
+
 		
 		CloneNetworkTaskFactory mutation= new CloneNetworkTaskFactory(networkManager, cyNetworkFactoryServiceRef,cyNetworkNamingServiceRef,cyApplicationManager,cyNetworkTableManager,rootNetwokMng);
 		Properties cloneprops = new Properties();

@@ -39,7 +39,11 @@ import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.values.VisualPropertyValue;
+import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
+import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualPropertyDependency;
+import org.cytoscape.view.vizmap.VisualStyle;
+import org.cytoscape.view.vizmap.VisualStyleFactory;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
@@ -61,7 +65,7 @@ public class SimulationTask extends AbstractTask {
  	public ListSingleSelection<String> simType = new ListSingleSelection<String>("Static","Random");
 	
 	@Tunable(description="start", groups={"Simulation","Static"}, xorKey="Static")
- 	public long start = 0;
+ 	public long start = 1;
  	
  	@Tunable(description="end", groups={"Simulation","Static"}, xorKey="Static")
  	public long end = 9;
@@ -69,7 +73,6 @@ public class SimulationTask extends AbstractTask {
  	@Tunable(description="Numbers of simulations", groups={"Simulation","Random"}, xorKey="Random")
  	public long rnSim = 10;
  
-	   
 	private CyNetworkFactory networkFactory;
 	private CyNetworkManager networkManager;
 	private CyNetworkNaming networkNaming;
@@ -92,8 +95,7 @@ public class SimulationTask extends AbstractTask {
 		this.cont = 0;
 		this.myNet = (CySubNetwork) network;
 		this.networkViewFactory = networkViewFactory;
-		this.networkViewManager = networkViewManager;
-		
+		this.networkViewManager = networkViewManager;		
 	}
 	
 	public long GetUSIDnetwork() {
@@ -213,14 +215,18 @@ public class SimulationTask extends AbstractTask {
 	boolean done =false;
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
-		String arch = "CPU";
+		String arch = "CPUS";
 		if(chooser.getSelectedValue().equals(" GPU     "))
 		{
-			arch = "GPU";
+			arch = "GPUs";
 		}
 		
 		if(simType.getSelectedValue().equals("Static")) {
 			rnSim = (end-start)+1;
+			String dir = System.getProperty("user.dir")+"/grn_gpu/makefile";
+			ModifyText(dir,"init = " ,"init = "+start);
+		}else {
+			arch = "CPUR";
 		}
 		
 		taskMonitor.setTitle("Processing");
@@ -286,7 +292,7 @@ public class SimulationTask extends AbstractTask {
             out1.close();
 
 			dir = System.getProperty("user.dir")+"/grn_gpu/makefile";
-			ModifyText(dir,"tecnologia = " ,"tecnologia = "+arch+"s");	
+			ModifyText(dir,"tecnologia = " ,"tecnologia = "+arch);	
 			if(mutations) {
 				ModifyText(dir, "saida = ", "saida = mutations_"+arch+"_S"+rnSim+"-"+clonenumber+".txt");
 			}
@@ -476,7 +482,6 @@ public class SimulationTask extends AbstractTask {
 						}
 						else {
 							attnetwork.addEdge(attnetwork.getNode(first.getSUID()), attnetwork.getNode(first.getSUID()), true);
-					
 						}			
 					}
 			        if(clonenumber == "")
@@ -486,30 +491,38 @@ public class SimulationTask extends AbstractTask {
 					networkManager.addNetwork(attnetwork);
 					System.out.println("ID NET: "+attnetwork.getSUID());
 					
+					
+					 
+					
 					// ----------------------Testing create de view--------------------------------					
 					
-					final Collection<CyNetworkView> views = networkViewManager.getNetworkViews(myNet);
-					CyNetworkView myView = null;
-					
-					if(views.size() != 0)
-						myView = views.iterator().next();
-//					System.out.println(myView.toString());
-					if (myView == null) {
-						// create a new view for my network
-						myView = networkViewFactory.createNetworkView(attnetwork);
-						myView.setVisualProperty(BasicVisualLexicon.NETWORK_BACKGROUND_PAINT, Color.BLUE );
-						networkViewManager.addNetworkView(myView);
-					} else {
-						System.out.println("networkView already existed.");
-						
-					}
-
-					// Set the variable destroyView to true, the following snippet of code
-					// will destroy a view
-					boolean destroyView = false;
-					if (destroyView) {
-						networkViewManager.destroyNetworkView(myView);
-					}
+//					final Collection<CyNetworkView> views = networkViewManager.getNetworkViews(myNet);
+//					CyNetworkView myView = null;
+//				
+//					if(views.size() != 0)
+//						myView = views.iterator().next();
+//					if (myView == null) {
+//						// create a new view for my network
+//						myView = networkViewFactory.createNetworkView(attnetwork);
+////						
+////						myView.setVisualProperty(BasicVisualLexicon.EDGE_LABEL, "2" );
+////						networkViewManager.addNetworkView(myView);
+////						myView.updateView();
+//					} else {
+//						System.out.println("networkView already existed.");
+//						VisualStyle vs= this.visualStyleFactoryServiceRef.createVisualStyle("Default");
+//						 vmmServiceRef.addVisualStyle(vs);
+//						 vs.apply(myView);
+//						 myView.setVisualProperty(BasicVisualLexicon.EDGE_LABEL, "2" );
+//						 myView.updateView();
+//					}
+//
+//					// Set the variable destroyView to true, the following snippet of code
+//					// will destroy a view
+//					boolean destroyView = false;
+//					if (destroyView) {
+//						networkViewManager.destroyNetworkView(myView);
+//					}
 				}
 			}
 		

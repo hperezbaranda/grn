@@ -5,8 +5,12 @@ import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.task.NetworkTaskFactory;
+import org.cytoscape.task.read.LoadVizmapFileTaskFactory;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
+import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
+import org.cytoscape.view.vizmap.VisualMappingManager;
+import org.cytoscape.view.vizmap.VisualStyleFactory;
 import org.cytoscape.work.TaskIterator;
 
 public class SimTaskFactory implements NetworkTaskFactory {
@@ -16,7 +20,7 @@ public class SimTaskFactory implements NetworkTaskFactory {
 	private CyNetworkNaming cyNetworkNaming;
 	private CyNetworkViewManager networkViewManager;
 	private CyNetworkViewFactory networkViewFactory;
-	
+
 	
 	public SimTaskFactory(CyNetworkFactory cyNetworkFactory,CyNetworkManager cyNetworkManager,CyNetworkNaming cyNetworkNaming, CyNetworkViewManager networkViewManager,CyNetworkViewFactory networkViewFactory) {
 		 this.cyNetworkFactory = cyNetworkFactory;
@@ -24,7 +28,6 @@ public class SimTaskFactory implements NetworkTaskFactory {
 		 this.cyNetworkNaming = cyNetworkNaming;
 		 this.networkViewFactory = networkViewFactory;
 		 this.networkViewManager = networkViewManager;
-		 
 	}
 
 	@Override
