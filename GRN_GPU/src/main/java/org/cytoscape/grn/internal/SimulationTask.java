@@ -376,7 +376,7 @@ public class SimulationTask extends AbstractTask {
 					}
 					
 					dir = System.getProperty("user.dir");
-					ProcessBuilder builder2 = new ProcessBuilder(dir+"/grn_gpu/venv/bin/python3",  dir+"/grn_gpu/load_graph.py",dir+"/grn_gpu/"+filename,"3");
+					ProcessBuilder builder2 = new ProcessBuilder(dir+"/grn_gpu/.pyenv/bin/python3",  dir+"/grn_gpu/load_graph.py",dir+"/grn_gpu/"+filename,"3");
 		            final Process process2 = builder2.start();
 //					JOptionPane pane2 = new JOptionPane("Processing to thresholding graph...");
 //					final JDialog dialog2 = pane2.createDialog(null, "Processing");
