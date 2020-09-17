@@ -79,7 +79,7 @@ public class GRNGraphAction extends AbstractCyAction {
 				Process process = builder.start();
 				process.waitFor();
 				
-				builder = new ProcessBuilder("tar", "xzf", dest+"/grn_gpu/pyenv.tar.gz", "-C", dest+"/grn_gpu/.pyenv");
+				builder = new ProcessBuilder("tar", "xzf", dest+"/grn_gpu/pyenv.tar.gz", "-C", dest+"/grn_gpu/");
 				System.out.println(builder.command());
 				process = builder.start();
 				process.waitFor();
